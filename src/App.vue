@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import Brand from './components/brand/Brand.vue';
+import Main from "./layouts/Main.vue";
 </script>
 
 <template>
-  <Brand />
+  <Main />
 </template>
