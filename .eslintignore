@@ -1,0 +1,6 @@
+.changeset
+.github
+.prettierrc
+node_modules
+dist
+dist-electron
