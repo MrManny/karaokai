@@ -1,10 +1,10 @@
 ---
 name: 🥺 Help wanted
-about: Confuse about the use of electron-vue-vite
-title: "[Help] the title of help wanted report"
+about: Need help with a specific thing?
+title: "[Help] the title of what you need help with"
 labels: help wanted
 assignees: ''
 
 ---
 
-#### Describe the problem you confuse
+#### Describe the problem you need help with
