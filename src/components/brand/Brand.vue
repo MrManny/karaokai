@@ -1,7 +1,5 @@
 <template>
-  <h1>
-    Karaok<span class="brand-suffix">AI</span>
-  </h1>
+  <h1>Karaok<span class="brand-suffix">AI</span></h1>
 </template>
 
 <style>
