@@ -1,7 +1,5 @@
-<script setup lang="ts">
-import Main from "./layouts/Main.vue";
-</script>
-
 <template>
-  <Main />
+  <component :is="$route.meta.layout ?? 'div'">
+    <router-view />
+  </component>
 </template>

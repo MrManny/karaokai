@@ -7,11 +7,8 @@ import Brand from '../components/brand/Brand.vue';
     <div class="top">
       <Brand />
     </div>
-    <nav>
-      Side
-    </nav>
     <main>
-      Main
+      <slot />
     </main>
   </div>
 </template>
@@ -22,15 +19,12 @@ import Brand from '../components/brand/Brand.vue';
   gap: 8px;
   grid-template-columns: 240px auto;
   grid-template-rows: 48px auto;
-  grid-template-areas: "top top" "side main";
+  grid-template-areas: 'top' 'main';
+  margin: 16px;
 }
 
 .top {
   grid-area: top;
-}
-
-nav {
-  grid-area: side;
 }
 
 main {
