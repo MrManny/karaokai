@@ -1,0 +1,34 @@
+{
+  "name": "karaokai",
+  "version": "0.0.0",
+  "main": "dist-electron/main/index.js",
+  "description": "PowerPoint Karaoke - but AI-powered",
+  "author": "Manuel Warum <mwarum@gmail.com>",
+  "license": "MIT",
+  "keywords": [],
+  "debug": {
+    "env": {
+      "VITE_DEV_SERVER_URL": "http://127.0.0.1:3344/"
+    }
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build && electron-builder",
+    "preview": "vite preview",
+
+    "changeset": "changeset",
+    "changeset:generate": "changeset version"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.26.2",
+    "@vitejs/plugin-vue": "^4.1.0",
+    "electron": "^25.0.1",
+    "electron-builder": "^24.4.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.1.4",
+    "vite-plugin-electron": "^0.12.0",
+    "vite-plugin-electron-renderer": "^0.14.1",
+    "vue": "^3.2.47",
+    "vue-tsc": "^1.2.0"
+  }
+}
