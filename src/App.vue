@@ -1,7 +1,5 @@
-<script setup lang="ts">
-import Brand from './components/brand/Brand.vue';
-</script>
-
 <template>
-  <Brand />
+  <component :is="$route.meta.layout ?? 'div'">
+    <router-view />
+  </component>
 </template>

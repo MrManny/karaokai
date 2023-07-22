@@ -9,15 +9,14 @@ module.exports = {
       current: 'currentColor',
 
       // https://coolors.co/palette/e63946-f1faee-a8dadc-457b9d-1d3557
-      red: '#E63946',
-      honeydew: '#F1FAEE',
-      blue: '#A8DADC',
-      cerulean: '#457B9D',
-      berkeley: '#1D3557',
+      danger: '#E63946',
+      default: '#F1FAEE',
+      primary: '#0094C6',
       black: '#212121',
+      totalBlack: '#101010',
     },
     fontFamily: {
-      body: ['OpenSans'],
+      body: ['Arial', 'OpenSans', 'sans-serif'],
     },
     extend: {},
   },

@@ -18,14 +18,17 @@
     "changeset": "changeset",
     "changeset:generate": "changeset version",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest --run"
   },
   "devDependencies": {
     "@changesets/cli": "^2.26.2",
+    "@heroicons/vue": "^2.0.18",
     "@typescript-eslint/eslint-plugin": "^6.1.0",
     "@typescript-eslint/parser": "^6.1.0",
     "@vitejs/plugin-vue": "^4.1.0",
     "@vue/eslint-config-typescript": "^11.0.3",
+    "@vue/test-utils": "^2.4.1",
     "autoprefixer": "^10.4.14",
     "electron": "^25.0.1",
     "electron-builder": "^24.4.0",
@@ -33,6 +36,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-vue": "^9.15.1",
+    "jsdom": "^22.1.0",
     "postcss": "^8.4.27",
     "prettier": "^3.0.0",
     "tailwindcss": "^3.3.3",
@@ -40,8 +44,10 @@
     "vite": "^4.1.4",
     "vite-plugin-electron": "^0.12.0",
     "vite-plugin-electron-renderer": "^0.14.1",
+    "vitest": "^0.33.0",
     "vue": "^3.2.47",
     "vue-eslint-parser": "^9.3.1",
+    "vue-router": "^4.2.4",
     "vue-tsc": "^1.2.0"
   }
 }
