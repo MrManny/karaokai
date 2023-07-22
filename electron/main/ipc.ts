@@ -1,6 +1,6 @@
-// New window example arg: new windows url
 import { BrowserWindow, ipcMain } from 'electron';
 import { indexHtml, preload, url } from './paths';
+import './ipc-gpt';
 
 ipcMain.handle('open-win', (_, arg) => {
   const childWindow = new BrowserWindow({

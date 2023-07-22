@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell } from 'electron';
 import { release } from 'node:os';
 import { join } from 'node:path';
 import { indexHtml, preload, url } from './paths';
+import './ipc';
 
 // Disable GPU Acceleration for Windows 7
 if (release().startsWith('6.1')) app.disableHardwareAcceleration();

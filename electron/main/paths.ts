@@ -7,3 +7,4 @@ process.env.PUBLIC = process.env.VITE_DEV_SERVER_URL ? join(process.env.DIST_ELE
 export const preload = join(__dirname, '../preload/index.js');
 export const url = process.env.VITE_DEV_SERVER_URL;
 export const indexHtml = join(process.env.DIST, 'index.html');
+export const credentials = join(process.cwd(), 'credentials.json');
