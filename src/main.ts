@@ -8,7 +8,7 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes,
 });
-const app = await createApp(App);
+const app = createApp(App);
 app.use(router);
 app.mount('#app').$nextTick(() => {
   postMessage({ payload: 'removeLoading' }, '*');
