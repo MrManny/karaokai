@@ -3,10 +3,9 @@ import type { Message } from './openai-schema';
 import { responseSchema } from './openai-schema';
 import { Json } from './mimes';
 import { getCredential } from './credentials-vault';
+import { ChatGpt } from './ipc-keys';
 
-const Chat = 'chat' as const;
-
-ipcMain.handle(Chat, async (_, messages: Message[]) => {
+ipcMain.handle(ChatGpt.Chat, async (_, messages: Message[]) => {
   const token = getCredential('openai');
   if (!token) throw new Error(`Token not set`);
 

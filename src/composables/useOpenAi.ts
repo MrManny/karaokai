@@ -1,6 +1,11 @@
-import type { Message } from '../../electron/main/openai-schema';
 import { ipcRenderer } from 'electron';
 import { ref } from 'vue';
+
+type Roles = 'assistant' | 'user' | 'system';
+type Message = {
+  role: Roles;
+  content: string;
+};
 
 export function useOpenAi() {
   const memory = ref<Message[]>([]);

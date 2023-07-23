@@ -25,6 +25,10 @@ function save(): void {
   writeFileSync(credentials, serialized);
 }
 
+export function vaultKeys(): (keyof Credentials)[] {
+  return Object.keys(vault);
+}
+
 export function getCredential(name: string): string | undefined {
   return vault[name];
 }

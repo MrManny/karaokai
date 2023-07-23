@@ -1,8 +1,11 @@
 import { ipcMain } from 'electron';
-import { setCredential } from './credentials-vault';
+import { setCredential, vaultKeys } from './credentials-vault';
+import { Vault } from './ipc-keys';
 
-const SetToken = 'set-token' as const;
-
-ipcMain.handle(SetToken, (_, type: string, token: string) => {
+ipcMain.handle(Vault.SetToken, (_, type: string, token: string) => {
   setCredential(type, token);
+});
+
+ipcMain.handle(Vault.GetKeys, () => {
+  return vaultKeys();
 });
