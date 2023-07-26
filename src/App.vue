@@ -1,5 +1,7 @@
 <template>
   <component :is="$route.meta.layout ?? 'div'">
-    <router-view />
+    <Suspense>
+      <router-view />
+    </Suspense>
   </component>
 </template>

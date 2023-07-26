@@ -8,7 +8,7 @@ import MainActions from '../components/MainActions/MainActions.vue';
     <div class="top h-group">
       <Brand />
 
-      <MainActions />
+      <MainActions @onClickSettings="$router.push({ name: 'vault' })" />
     </div>
     <main class="v-group">
       <slot />
