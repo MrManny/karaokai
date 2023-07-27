@@ -8,6 +8,7 @@
     "helpers:pinGitHubActionDigests",
     ":labels(dependencies)",
     "npm:unpublishSafe",
+    "group:allNonMajor",
 
     "packages:eslint",
     "packages:jsTest",
