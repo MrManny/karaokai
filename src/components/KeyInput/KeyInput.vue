@@ -20,9 +20,9 @@ defineProps({
     type: Boolean,
     default: false,
   },
-  value: {
-    type: String,
-    default: '',
+  set: {
+    type: Boolean,
+    default: false,
   },
 });
 const emit = defineEmits(['update:value']);
@@ -36,5 +36,11 @@ const onInput = (event: Event) => {
 </script>
 
 <template>
-  <input :id="id" type="password" :disabled="disabled" :aria-label="label" :placeholder="placeholder" :value="value" :required="required" @input="onInput" />
+  <input :id="id" type="password" :disabled="disabled" :aria-label="label" :placeholder="placeholder" :class="{ set }" :required="required" @input="onInput" />
 </template>
+
+<style scoped>
+.set {
+  @apply border-success;
+}
+</style>

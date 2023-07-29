@@ -23,13 +23,13 @@ defineEmits(['update:openAiKey', 'update:stabilityAiKey', 'save']);
 <template>
   <div class="form">
     <label for="openAiKey"> OpenAI token </label>
-    <KeyInput id="openAiKey" :value="hasOpenAiKey ? 'set' : ''" @update:value="(key: string) => $emit('update:openAiKey', key)" />
+    <KeyInput id="openAiKey" :set="hasOpenAiKey" @update:value="(key: string) => $emit('update:openAiKey', key)" required />
 
     <label for="stabilityAiKey"> StabilityAI token </label>
-    <KeyInput id="stabilityAiKey" :value="hasStabilityAiKey ? 'set' : ''" @update:value="(key: string) => $emit('update:stabilityAiKey', key)" />
+    <KeyInput id="stabilityAiKey" :set="hasStabilityAiKey" @update:value="(key: string) => $emit('update:stabilityAiKey', key)" required />
 
     <div class="actions">
-      <Button :disabled="disabled" @click="$emit('save')">Save</Button>
+      <Button :disabled="disabled" @click="$emit('save')" variant="primary">Save</Button>
     </div>
   </div>
 </template>
