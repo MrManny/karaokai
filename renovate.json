@@ -13,5 +13,13 @@
     "packages:eslint",
     "packages:jsTest",
     "packages:linters"
+  ],
+
+"packageRules": [
+    {
+      "matchUpdateTypes": ["patch"],
+      "matchCurrentVersion": "!/^0/",
+      "automerge": true
+    }
   ]
 }
