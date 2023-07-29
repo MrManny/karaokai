@@ -6,6 +6,9 @@
     ":reviewer(MrManny)",
     ":pinDependencies",
     ":maintainLockFilesWeekly",
+    ":automergePatch",
+    ":automergeRequireAllStatusChecks",
+    ":automergePr",
 
     "helpers:pinGitHubActionDigests",
     ":labels(dependencies)",
