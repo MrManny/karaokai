@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { Cog8ToothIcon } from '@heroicons/vue/24/solid';
 
-defineEmits(['onClickSettings']);
+defineEmits(['openSettings']);
 </script>
 
 <template>
   <div class="actions">
-    <button title="Settings" @click="$emit('onClickSettings')">
+    <button title="Settings" @click="$emit('openSettings')">
       <Cog8ToothIcon />
     </button>
   </div>
