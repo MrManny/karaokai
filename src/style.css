@@ -18,6 +18,18 @@ body {
     @apply text-default bg-black antialiased;
 }
 
+input {
+    @apply text-default bg-black border-2 border-default rounded px-1 py-0.5 antialiased;
+}
+
+input:valid {
+    @apply text-success border-success;
+}
+
+input:invalid {
+    @apply text-danger border-danger;
+}
+
 a {
     @apply text-primary;
 }

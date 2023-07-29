@@ -13,6 +13,7 @@ dist-ssr
 dist-electron
 release
 *.local
+coverage
 
 # Editor directories and files
 .vscode/.debug.env
@@ -23,3 +24,6 @@ release
 *.njsproj
 *.sln
 *.sw?
+
+# Runtime files
+credentials.json
