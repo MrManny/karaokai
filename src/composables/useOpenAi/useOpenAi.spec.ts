@@ -23,7 +23,7 @@ describe('useOpenAi', () => {
 
     // assert
     expect(ipcRenderer.invoke).toBeCalledWith('chat', [{ role: 'user', content: 'What is your name?' }]);
-    expect(response).deep.equals({ role: 'assistant', content: 'Bob' });
+    expect(response).deep.equals('Bob');
   });
 
   it('retains memory', async () => {
