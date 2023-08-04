@@ -10,7 +10,7 @@ export function useSlideBuilder() {
 
   function unquote(str: string): string {
     if (str.startsWith('"') && str.endsWith('"')) {
-      return str.substring(1, str.length - 2);
+      return str.substring(1, str.length - 1);
     }
     return str;
   }
@@ -19,8 +19,10 @@ export function useSlideBuilder() {
     return str.replace(TrailingPunctExpr, '');
   }
 
+  const cleanUpPipeline: ((str: string) => string)[] = [(s) => s.trim(), unquote, removeTrailingPunct];
+
   function cleanUp(str: string): string {
-    return removeTrailingPunct(unquote(str));
+    return cleanUpPipeline.reduce((strSoFar, fn) => fn(strSoFar), str);
   }
 
   function buildInitialHistory(...moreDetails: string[]): Message[] {
@@ -29,7 +31,8 @@ export function useSlideBuilder() {
 
   async function findTopic(): Promise<string> {
     const messages = [...buildInitialHistory(), { role: 'user', content: topic.prompt }];
-    return await ask(messages).then((answer) => cleanUp(answer.content));
+    const answer = await ask(messages);
+    return cleanUp(answer.content);
   }
 
   async function generate(forTopic: string): Promise<SlideText[]> {
@@ -39,12 +42,13 @@ export function useSlideBuilder() {
     for (const { prompt, summary } of prompts) {
       const messages = [...history, { role: 'user', content: prompt }];
       const answer = await ask(messages);
+      const cleaned = cleanUp(answer.content);
       if (summary) {
         history.push({ role: 'system', content: summary(answer.content) });
       } else {
-        history.push({ role: 'user', content: prompt }, { role: 'assistant', content: prompt });
+        history.push({ role: 'user', content: prompt }, { role: 'assistant', content: cleaned });
       }
-      slides.push({ type: 'text', prompt, text: answer.content });
+      slides.push({ type: 'text', prompt, text: cleaned });
     }
 
     return slides;

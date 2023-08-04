@@ -2,6 +2,8 @@
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import { ref, shallowRef } from 'vue';
 import { useBusy } from '../../composables/useBusy';
+// CAUTION: this only exists to test/demo some GPT-3.5 interactions.
+// This will certainly change in a commit or ten.
 
 const { findTopic, generate } = useSlideBuilder();
 const { isBusy, op } = useBusy();

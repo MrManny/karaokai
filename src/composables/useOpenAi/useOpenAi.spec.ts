@@ -9,73 +9,43 @@ vi.mock('electron', () => ({
 }));
 
 describe('useOpenAi', () => {
+  const assistantMessage = (text: string) => ({ role: 'assistant', content: text });
+  const userMessage = (text: string) => ({ role: 'user', content: text });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should be able to send a message', async () => {
+  it('should be able to ask a question', async () => {
     // arrange
-    const { chat } = useOpenAi();
-    ipcRenderer.invoke.mockResolvedValueOnce({ role: 'assistant', content: 'Bob' });
+    const { ask } = useOpenAi();
+    ipcRenderer.invoke.mockResolvedValueOnce(assistantMessage('Bob'));
 
     // act
-    const response = await chat('What is your name?');
+    const response = await ask([userMessage('What is your name?')]);
 
     // assert
     expect(ipcRenderer.invoke).toBeCalledWith('chat', [{ role: 'user', content: 'What is your name?' }]);
-    expect(response).deep.equals('Bob');
+    expect(response).deep.equals(assistantMessage('Bob'));
   });
 
-  it('retains memory', async () => {
+  it('should be able to send a series of messages', async () => {
     // arrange
-    const { chat, memory } = useOpenAi();
-    ipcRenderer.invoke.mockResolvedValue({ role: 'assistant', content: 'Exactly.' });
+    const history = [
+      userMessage('What is your name?'),
+      assistantMessage('Mihi nomen est Bob.'),
+      userMessage('Is that Latin or something?'),
+      assistantMessage('Maybe.'),
+      userMessage('Cool beans.'),
+    ];
+    const { ask } = useOpenAi();
+    ipcRenderer.invoke.mockResolvedValueOnce(assistantMessage('It *is* cool beans!'));
 
     // act
-    await chat('Bow ties are cool.');
-    await chat('Ties suck.');
+    const response = await ask(history);
 
     // assert
-    expect(memory.value).deep.equals([
-      {
-        content: 'Bow ties are cool.',
-        role: 'user',
-      },
-      {
-        content: 'Exactly.',
-        role: 'assistant',
-      },
-      {
-        content: 'Ties suck.',
-        role: 'user',
-      },
-      {
-        content: 'Exactly.',
-        role: 'assistant',
-      },
-    ]);
-  });
-
-  it('can clear its memory', async () => {
-    // arrange
-    const { chat, memory, reset } = useOpenAi();
-    ipcRenderer.invoke.mockResolvedValue({ role: 'assistant', content: 'Exactly.' });
-
-    // act
-    await chat('Bow ties are cool.');
-    reset();
-    await chat('Ties suck.');
-
-    // assert
-    expect(memory.value).deep.equals([
-      {
-        content: 'Ties suck.',
-        role: 'user',
-      },
-      {
-        content: 'Exactly.',
-        role: 'assistant',
-      },
-    ]);
+    expect(ipcRenderer.invoke).toBeCalledWith('chat', history);
+    expect(response).deep.equals(assistantMessage('It *is* cool beans!'));
   });
 });
