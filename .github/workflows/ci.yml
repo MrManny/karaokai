@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   eslint:
@@ -45,4 +46,8 @@ jobs:
         run: npm install
 
       - name: Run vitest
-        run: npm run test
+        run: npm run test:coverage
+
+      - name: Report Coverage
+        if: always() # Also generate the report if tests are failing
+        uses: davelosert/vitest-coverage-report-action@v2
