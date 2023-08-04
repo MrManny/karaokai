@@ -1,18 +1,8 @@
 name: Build
 
 on:
-  push:
+  release:
     branches: [main]
-    paths-ignore:
-      - "**.md"
-      - "**.spec.js"
-      - ".idea"
-      - ".vscode"
-      - ".dockerignore"
-      - "Dockerfile"
-      - ".gitignore"
-      - ".github/**"
-      - "!.github/workflows/build.yml"
 
 jobs:
   build:
@@ -20,8 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [windows-latest]
-        #os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout Code
