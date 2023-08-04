@@ -50,7 +50,7 @@ jobs:
 
       - name: Report Coverage
         if: always() # Also generate the report if tests are failing
-        uses: davelosert/vitest-coverage-report-action@v2
+        uses: davelosert/vitest-coverage-report-action@123077f0e59cbc2e9afd2c454dbc14ae36737874 # v2
 
       - name: Upload Coverage
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3
