@@ -11,7 +11,8 @@ import type { SlideText } from '../../types/slide';
 // This will certainly change in a commit or ten.
 
 const { findTopic, generate } = useSlideBuilder();
-const { isBusy, op } = useBusy();
+const { isBusy: isTopicBusy, op: topicOp } = useBusy();
+const { isBusy: areCardsBusy, op: cardsOp } = useBusy();
 
 const emit = defineEmits(['update:topic', 'update:slides']);
 const props = defineProps({
@@ -30,7 +31,7 @@ const handleSetTopic = (topic: string) => {
 };
 
 const handleGenerateTopic = async () => {
-  await op(async () => {
+  await topicOp(async () => {
     const topic = await findTopic();
     handleSetTopic(topic);
   });
@@ -42,7 +43,7 @@ const handleGenerateText = async () => {
     return;
   }
 
-  await op(async () => {
+  await cardsOp(async () => {
     const generated = await generate(props.topic);
     emit('update:slides', generated);
   });
@@ -60,7 +61,6 @@ const handleUpdateText = (index: number, newText: string) => {
     <template #title>
       <span id="topic">Topic</span>
     </template>
-    <template #subtitle v-if="isBusy"> Thinking... 🤔 </template>
     <template #content>
       <div class="p-inputgroup">
         <InputText
@@ -72,17 +72,26 @@ const handleUpdateText = (index: number, newText: string) => {
         />
         <Button
           @click="handleGenerateTopic"
-          :disabled="isBusy"
+          :loading="isTopicBusy"
           class="p-inputgroup-addon"
           aria-labelledby="topic"
           data-testid="topic-random-button"
           label="Random"
-        />
+        >
+          <template #icon>
+            <span class="pi pi-search" />
+          </template>
+        </Button>
       </div>
     </template>
+    <template #footer>
+      <Button data-testid="generate-button" :loading="areCardsBusy" @click="handleGenerateText" label="Generate">
+        <template #icon>
+          <span class="pi pi-search" />
+        </template>
+      </Button>
+    </template>
   </Card>
-
-  <Button data-testid="generate-button" :disabled="!topic || !isBusy" @click="handleGenerateText" label="Generate" />
 
   <div class="card-deck" v-if="topic">
     <Card v-for="(value, index) of slides" :key="value.text">
@@ -104,7 +113,7 @@ const handleUpdateText = (index: number, newText: string) => {
       <template #footer>
         <Button label="Suggest">
           <template #icon>
-            <span class="pi pi-replay" />
+            <span class="pi pi-search" />
           </template>
         </Button>
       </template>
