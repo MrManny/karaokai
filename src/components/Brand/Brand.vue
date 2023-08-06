@@ -35,9 +35,9 @@
 
 <style scoped>
 path {
-  @apply fill-default;
+  fill: var(--text-color);
 }
 path.primary {
-  @apply fill-primary;
+  fill: var(--primary-color);
 }
 </style>

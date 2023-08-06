@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import Brand from '../components/Brand/Brand.vue';
 import MainActions from '../components/MainActions/MainActions.vue';
+import { RouteNames } from '../routes';
 </script>
 
 <template>
   <div class="layout">
-    <div class="top h-group">
-      <Brand />
+    <div class="top">
+      <Brand @click="$router.push({ name: RouteNames.Main })" />
 
-      <MainActions @openSettings="$router.push({ name: 'vault' })" />
+      <MainActions
+        data-testid="main-actions"
+        @openEditor="$router.push({ name: RouteNames.Editor })"
+        @openSettings="$router.push({ name: RouteNames.Vault })"
+      />
     </div>
-    <main class="v-group">
+    <main>
       <slot />
     </main>
   </div>
@@ -18,22 +23,31 @@ import MainActions from '../components/MainActions/MainActions.vue';
 
 <style scoped>
 .layout {
-  @apply flex flex-col gap-4 m-4;
-}
-
-.top {
-  @apply flex-nowrap ml-0 mr-0;
-  @apply bg-totalBlack;
-  @apply sticky top-0 -m-4 p-4;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px;
 }
 
 main {
-  @apply mt-4 mx-6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-@media screen and (min-width: 1280px) {
-  main {
-    @apply ml-auto mr-auto w-[1280px];
-  }
+.top {
+  background-color: var(--surface-b);
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  margin: -16px;
+  padding: 16px;
+  z-index: 1;
+}
+
+.top *:first-child {
+  flex-grow: 1;
 }
 </style>

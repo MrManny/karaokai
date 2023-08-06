@@ -1,23 +1,31 @@
 <script setup lang="ts">
-import { Cog8ToothIcon } from '@heroicons/vue/24/solid';
+import Button from 'primevue/button';
 
-defineEmits(['openSettings']);
+defineEmits(['openEditor', 'openSettings']);
 </script>
 
 <template>
   <div class="actions">
-    <button title="Settings" @click="$emit('openSettings')">
-      <Cog8ToothIcon />
-    </button>
+    <Button @click="() => $emit('openEditor')" label="New">
+      <template #icon>
+        <span class="pi pi-plus" />
+      </template>
+    </Button>
+    <Button @click="() => $emit('openSettings')" label="Settings">
+      <template #icon>
+        <span class="pi pi-wrench" />
+      </template>
+    </Button>
   </div>
 </template>
 
 <style scoped>
 .actions {
-  @apply flex gap-2 flex-row flex-nowrap flex-grow justify-end items-center;
-}
-
-.actions > button {
-  @apply w-8 h-8;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-items: end;
+  align-items: center;
+  gap: 8px;
 }
 </style>

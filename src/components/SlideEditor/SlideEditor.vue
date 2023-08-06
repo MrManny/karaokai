@@ -1,63 +1,130 @@
 <script setup lang="ts">
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
-import { ref, shallowRef } from 'vue';
+import type { PropType } from 'vue';
 import { useBusy } from '../../composables/useBusy';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import Card from 'primevue/card';
+import Textarea from 'primevue/textarea';
+import type { SlideText } from '../../types/slide';
 // CAUTION: this only exists to test/demo some GPT-3.5 interactions.
 // This will certainly change in a commit or ten.
 
 const { findTopic, generate } = useSlideBuilder();
-const { isBusy, op } = useBusy();
-const topic = ref<string>('');
-const option = shallowRef<Record<string, string>>({});
+const { isBusy: isTopicBusy, op: topicOp } = useBusy();
+const { isBusy: areCardsBusy, op: cardsOp } = useBusy();
+
+const emit = defineEmits(['update:topic', 'update:slides']);
+const props = defineProps({
+  topic: {
+    type: String,
+    default: '',
+  },
+  slides: {
+    type: Array as PropType<SlideText[]>,
+    default: () => [],
+  },
+});
+
+const handleSetTopic = (topic: string) => {
+  emit('update:topic', topic.trim());
+};
 
 const handleGenerateTopic = async () => {
-  await op(async () => {
-    topic.value = await findTopic();
+  await topicOp(async () => {
+    const topic = await findTopic();
+    handleSetTopic(topic);
   });
 };
 
 const handleGenerateText = async () => {
-  if (!topic.value) {
+  if (!props.topic) {
     console.error('No topic set.');
     return;
   }
 
-  await op(async () => {
-    const generated = await generate(topic.value);
-    option.value = generated.reduce((previousValue, currentValue) => ({ ...previousValue, [currentValue.prompt]: currentValue.text }), {} as Record<string, string>);
+  await cardsOp(async () => {
+    const generated = await generate(props.topic);
+    emit('update:slides', generated);
   });
+};
+
+const handleUpdateText = (index: number, newText: string) => {
+  const newOption = [...props.slides];
+  newOption[index].text = newText;
+  emit('update:slides', newOption);
 };
 </script>
 
 <template>
-  <div>
-    <h2>Text</h2>
+  <Card>
+    <template #title>
+      <span id="topic">Topic</span>
+    </template>
+    <template #content>
+      <div class="p-inputgroup">
+        <InputText
+          aria-labelledby="topic"
+          data-testid="topic-input"
+          required
+          :value="topic"
+          @update:modelValue="(value?: string) => handleSetTopic(value ?? '')"
+        />
+        <Button
+          @click="handleGenerateTopic"
+          :loading="isTopicBusy"
+          class="p-inputgroup-addon"
+          aria-labelledby="topic"
+          data-testid="topic-random-button"
+          label="Random"
+        >
+          <template #icon>
+            <span class="pi pi-search" />
+          </template>
+        </Button>
+      </div>
+    </template>
+    <template #footer>
+      <Button data-testid="generate-button" :loading="areCardsBusy" @click="handleGenerateText" label="Generate">
+        <template #icon>
+          <span class="pi pi-search" />
+        </template>
+      </Button>
+    </template>
+  </Card>
 
-    <div>
-      <label>
-        Topic:
-        <input type="text" required v-model.trim="topic" />
-        <button @click="handleGenerateTopic" :disabled="isBusy">Random</button>
-      </label>
-    </div>
-
-    <div class="card-deck">
-      <dl v-for="(value, key) in option" :key="key">
-        <dt>{{ key }}</dt>
-        <dd>{{ value }}</dd>
-      </dl>
-
-      <button @click="handleGenerateText" :disabled="isBusy">More</button>
-    </div>
+  <div class="card-deck" v-if="topic">
+    <Card v-for="(value, index) of slides" :key="value.text">
+      <template #title>
+        <span :id="`label_${index}`">
+          {{ value.prompt }}
+        </span>
+      </template>
+      <template #content>
+        <Textarea
+          auto-resize
+          required
+          :data-testid="`text_${index}`"
+          :aria-labelledby="`label_${index}`"
+          :value="value.text"
+          @update:model-value="(newValue?: string) => handleUpdateText(index, newValue ?? '')"
+        />
+      </template>
+      <template #footer>
+        <Button label="Suggest">
+          <template #icon>
+            <span class="pi pi-search" />
+          </template>
+        </Button>
+      </template>
+    </Card>
   </div>
 </template>
 
 <style scoped>
 .card-deck {
-  @apply flex flex-row gap-2;
-}
-
-dt {
-  @apply font-semibold;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 256px));
+  gap: 8px;
 }
 </style>

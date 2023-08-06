@@ -1,27 +1,32 @@
-import { describe, expect, it } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { afterEach, describe, expect, it } from 'vitest';
 import MainActions from './MainActions.vue';
+import { cleanup } from '@testing-library/vue';
+import { screen, fireEvent } from '@testing-library/vue';
+import { renderComponent } from '../../utils/test-util';
 
 describe('MainActions', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
   it('has a button labeled "Settings"', () => {
     // arrange
-    const wrapper = mount(MainActions);
-    const button = wrapper.find('button[title="Settings"]');
+    renderComponent(MainActions);
+    const button = screen.getByText('Settings');
 
     // assert
-    expect(button.element).toBeDefined();
+    expect(button).toBeDefined();
   });
 
   it('emits openSettings when "Settings" is clicked', async () => {
     // arrange
-    const wrapper = mount(MainActions);
-    const button = wrapper.find('button[title="Settings"]');
+    const { emitted } = renderComponent(MainActions);
+    const button = screen.getByText('Settings');
 
     // act
-    await button.trigger('click');
-    await wrapper.vm.$nextTick();
+    await fireEvent.click(button);
 
     // assert
-    expect(wrapper.emitted('openSettings')).toBeDefined();
+    expect(emitted('openSettings')).toBeDefined();
   });
 });
