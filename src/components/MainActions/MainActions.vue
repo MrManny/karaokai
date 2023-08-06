@@ -6,8 +6,16 @@ defineEmits(['openEditor', 'openSettings']);
 
 <template>
   <div class="actions">
-    <Button @click="() => $emit('openEditor')"> New </Button>
-    <Button @click="() => $emit('openSettings')"> Settings </Button>
+    <Button @click="() => $emit('openEditor')" label="New">
+      <template #icon>
+        <span class="pi pi-plus" />
+      </template>
+    </Button>
+    <Button @click="() => $emit('openSettings')" label="Settings">
+      <template #icon>
+        <span class="pi pi-wrench" />
+      </template>
+    </Button>
   </div>
 </template>
 
