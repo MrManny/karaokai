@@ -8,7 +8,7 @@ import MainActions from '../components/MainActions/MainActions.vue';
     <div class="top">
       <Brand />
 
-      <MainActions @openSettings="$router.push({ name: 'vault' })" />
+      <MainActions data-testid="main-actions" @openSettings="$router.push({ name: 'vault' })" />
     </div>
     <main>
       <slot />
