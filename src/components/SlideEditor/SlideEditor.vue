@@ -1,55 +1,75 @@
 <script setup lang="ts">
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
-import { ref } from 'vue';
+import type { PropType } from 'vue';
 import { useBusy } from '../../composables/useBusy';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Card from 'primevue/card';
 import Textarea from 'primevue/textarea';
+import type { SlideText } from '../../types/slide';
 // CAUTION: this only exists to test/demo some GPT-3.5 interactions.
 // This will certainly change in a commit or ten.
 
 const { findTopic, generate } = useSlideBuilder();
 const { isBusy, op } = useBusy();
-const topic = ref<string>('');
-const option = ref<Record<string, string>>({});
+
+const emit = defineEmits(['update:topic', 'update:slides']);
+const props = defineProps({
+  topic: {
+    type: String,
+    default: '',
+  },
+  slides: {
+    type: Array as PropType<SlideText[]>,
+    default: () => [],
+  },
+});
+
+const handleSetTopic = (topic: string) => {
+  emit('update:topic', topic.trim());
+};
 
 const handleGenerateTopic = async () => {
   await op(async () => {
-    topic.value = await findTopic();
+    const topic = await findTopic();
+    handleSetTopic(topic);
   });
 };
 
 const handleGenerateText = async () => {
-  if (!topic.value) {
+  if (!props.topic) {
     console.error('No topic set.');
     return;
   }
 
   await op(async () => {
-    const generated = await generate(topic.value);
-    option.value = generated.reduce(
-      (previousValue, currentValue) => ({ ...previousValue, [currentValue.prompt]: currentValue.text }),
-      {} as Record<string, string>
-    );
+    const generated = await generate(props.topic);
+    emit('update:slides', generated);
   });
 };
 
-const update = (key: string, value: string) => {
-  option.value[key] = value.trim();
+const handleUpdateText = (index: number, newText: string) => {
+  const newOption = [...props.slides];
+  newOption[index].text = newText;
+  emit('update:slides', newOption);
 };
 </script>
 
 <template>
-  <h2>Text</h2>
-
   <Card>
     <template #title>
       <span id="topic">Topic</span>
     </template>
+    <template #subtitle v-if="isBusy"> Thinking... 🤔 </template>
     <template #content>
       <div class="p-inputgroup">
-        <InputText aria-labelledby="topic" data-testid="topic-input" required v-model.trim="topic" />
+        <InputText
+          aria-labelledby="topic"
+          data-testid="topic-input"
+          required
+          :value="topic"
+          @update:modelValue="(value?: string) => handleSetTopic(value ?? '')"
+        />
         <Button
           @click="handleGenerateTopic"
           :disabled="isBusy"
@@ -62,22 +82,23 @@ const update = (key: string, value: string) => {
     </template>
   </Card>
 
-  <Button :disabled="!option" @click="handleGenerateText" label="Generate" />
+  <Button data-testid="generate-button" :disabled="!topic || !isBusy" @click="handleGenerateText" label="Generate" />
 
   <div class="card-deck" v-if="topic">
-    <Card v-for="(value, key) in option" :key="key">
+    <Card v-for="(value, index) of slides" :key="value.text">
       <template #title>
-        <span :id="`label_${key}`">
-          {{ key }}
+        <span :id="`label_${index}`">
+          {{ value.prompt }}
         </span>
       </template>
       <template #content>
         <Textarea
           auto-resize
           required
-          :aria-labelledby="`label_${key}`"
-          :value="value"
-          @update:model-value="(newValue: string) => update(key, newValue)"
+          :data-testid="`text_${index}`"
+          :aria-labelledby="`label_${index}`"
+          :value="value.text"
+          @update:model-value="(newValue?: string) => handleUpdateText(index, newValue ?? '')"
         />
       </template>
       <template #footer>

@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
 
-const emit = defineEmits(['openSettings']);
-
-const onClickSettings = () => {
-  emit('openSettings');
-};
+defineEmits(['openEditor', 'openSettings']);
 </script>
 
 <template>
   <div class="actions">
-    <Button @click="onClickSettings"> Settings </Button>
+    <Button @click="() => $emit('openEditor')"> New </Button>
+    <Button @click="() => $emit('openSettings')"> Settings </Button>
   </div>
 </template>
 

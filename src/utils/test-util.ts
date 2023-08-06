@@ -4,13 +4,18 @@ import PrimeVue from 'primevue/config';
 
 export const defaultPlugins: RenderOptions['global']['plugins'] = [PrimeVue];
 
-const defaultOptions: RenderOptions = {
+export const defaultOptions: RenderOptions = {
   global: {
     plugins: defaultPlugins,
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function renderComponent(component: any, options: RenderOptions = defaultOptions): RenderResult {
-  return render(component, options);
+export function renderComponent(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  component: any,
+  props: RenderOptions['props'] = {},
+  options: Omit<RenderOptions, 'props'> = defaultOptions
+): RenderResult {
+  const effectiveOptions: RenderOptions = { ...options, props };
+  return render(component, effectiveOptions);
 }
