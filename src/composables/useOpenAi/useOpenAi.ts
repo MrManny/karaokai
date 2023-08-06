@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { Message } from './message';
+import type { Message } from './message';
 
 export function useOpenAi() {
   const ask = async (messages: Message[]): Promise<Message> => {

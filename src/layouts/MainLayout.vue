@@ -5,12 +5,12 @@ import MainActions from '../components/MainActions/MainActions.vue';
 
 <template>
   <div class="layout">
-    <div class="top h-group">
+    <div class="top">
       <Brand />
 
       <MainActions @openSettings="$router.push({ name: 'vault' })" />
     </div>
-    <main class="v-group">
+    <main>
       <slot />
     </main>
   </div>
@@ -18,22 +18,24 @@ import MainActions from '../components/MainActions/MainActions.vue';
 
 <style scoped>
 .layout {
-  @apply flex flex-col gap-4 m-4;
-}
-
-.top {
-  @apply flex-nowrap ml-0 mr-0;
-  @apply bg-totalBlack;
-  @apply sticky top-0 -m-4 p-4;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 16px;
 }
 
 main {
-  @apply mt-4 mx-6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-@media screen and (min-width: 1280px) {
-  main {
-    @apply ml-auto mr-auto w-[1280px];
-  }
+.top {
+  background-color: var(--surface-b);
+  position: sticky;
+  top: 0;
+  margin: -16px;
+  padding: 16px;
+  z-index: 1;
 }
 </style>

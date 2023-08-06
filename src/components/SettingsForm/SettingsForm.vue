@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import KeyInput from '../KeyInput/KeyInput.vue';
-import Button from '../Button/Button.vue';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
 
 defineProps({
   disabled: {
@@ -23,13 +23,13 @@ defineEmits(['update:openAiKey', 'update:stabilityAiKey', 'save']);
 <template>
   <div class="form">
     <label for="openAiKey"> OpenAI token </label>
-    <KeyInput id="openAiKey" :set="hasOpenAiKey" @update:value="(key: string) => $emit('update:openAiKey', key)" required />
+    <InputText id="openAiKey" @update:modelValue="(key) => $emit('update:openAiKey', key)" required />
 
     <label for="stabilityAiKey"> StabilityAI token </label>
-    <KeyInput id="stabilityAiKey" :set="hasStabilityAiKey" @update:value="(key: string) => $emit('update:stabilityAiKey', key)" required />
+    <InputText id="stabilityAiKey" @update:modelValue="(key) => $emit('update:stabilityAiKey', key)" required />
 
     <div class="actions">
-      <Button :disabled="disabled" @click="$emit('save')" variant="primary">Save</Button>
+      <Button :disabled="disabled" @click="$emit('save')" label="Save" />
     </div>
   </div>
 </template>

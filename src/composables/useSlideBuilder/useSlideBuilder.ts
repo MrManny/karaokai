@@ -26,7 +26,10 @@ export function useSlideBuilder() {
   }
 
   function buildInitialHistory(...moreDetails: string[]): Message[] {
-    return [{ role: 'system', content: instructions }, ...moreDetails.map((detail) => ({ role: 'system', content: detail }))];
+    return [
+      { role: 'system', content: instructions },
+      ...moreDetails.map((detail) => ({ role: 'system', content: detail })),
+    ];
   }
 
   async function findTopic(): Promise<string> {
