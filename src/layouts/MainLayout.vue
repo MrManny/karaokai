@@ -37,10 +37,17 @@ main {
 
 .top {
   background-color: var(--surface-b);
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
   position: sticky;
   top: 0;
   margin: -16px;
   padding: 16px;
   z-index: 1;
+}
+
+.top *:first-child {
+  flex-grow: 1;
 }
 </style>
