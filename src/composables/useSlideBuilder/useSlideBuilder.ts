@@ -1,12 +1,16 @@
 import { useOpenAi } from '../useOpenAi';
 import type { Message } from '../useOpenAi';
-import type { SlideText } from '../../types/slide';
+import type { Slide } from '../../types/slide';
 import { instructions, prompts, topic } from './prompts';
+import { useStabilityAi } from '../useStabilityAi/useStabilityAi';
+import { styles } from './styles';
+import { artists } from './artists';
 
 const TrailingPunctExpr = /\.\s*$/;
 
 export function useSlideBuilder() {
   const { ask } = useOpenAi();
+  const { text2image } = useStabilityAi();
 
   function unquote(str: string): string {
     if (str.startsWith('"') && str.endsWith('"')) {
@@ -32,14 +36,27 @@ export function useSlideBuilder() {
     ];
   }
 
+  function pick(ary: string[], howMany = 1): string[] {
+    const pool: string[] = [...ary];
+    const picked: string[] = [];
+    for (let i = 0; i < howMany; i++) {
+      const len = pool.length;
+      const pickIndex = Math.floor(Math.random() * len);
+      const pick = pool[pickIndex];
+      picked.push(pick);
+      pool.splice(pickIndex, 1);
+    }
+    return picked;
+  }
+
   async function findTopic(): Promise<string> {
     const messages = [...buildInitialHistory(), { role: 'user', content: topic.prompt }];
     const answer = await ask(messages);
     return cleanUp(answer.content);
   }
 
-  async function generate(forTopic: string): Promise<SlideText[]> {
-    const slides: SlideText[] = [];
+  async function generateText(forTopic: string): Promise<Slide[]> {
+    const slides: Slide[] = [];
     const history = buildInitialHistory(topic.summary(forTopic));
 
     for (const { prompt, summary } of prompts) {
@@ -51,14 +68,35 @@ export function useSlideBuilder() {
       } else {
         history.push({ role: 'user', content: prompt }, { role: 'assistant', content: cleaned });
       }
-      slides.push({ type: 'text', prompt, text: cleaned });
+      slides.push({ text: { prompt, text: cleaned } });
     }
 
     return slides;
   }
 
+  async function findImagePrompts(text: string): Promise<string> {
+    const messages: Message[] = [
+      {
+        role: 'system',
+        content:
+          'You generate three simple keywords. The first two keywords summarize the topic of the provided text. The last keyword is a random noun. Write down the keywords in a comma-separated list.',
+      },
+      { role: 'user', content: text },
+    ];
+    const { content: keywords } = await ask(messages);
+    const [style] = pick(styles);
+    const artist = pick(artists, 2).join(' and ');
+    return `${keywords}, ${style}, by ${artist}`;
+  }
+
+  async function generateImage(prompt: string): Promise<string> {
+    return await text2image(prompt);
+  }
+
   return {
+    findImagePrompts,
     findTopic,
-    generate,
+    generateText,
+    generateImage,
   };
 }
