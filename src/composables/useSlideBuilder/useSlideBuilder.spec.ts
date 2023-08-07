@@ -31,18 +31,18 @@ describe('useSlideBuilder', () => {
     // arrange
     const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: dummyAnswer });
     useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { generate } = useSlideBuilder();
+    const { generateText } = useSlideBuilder();
 
     // act
-    const texts = await generate(dummyTopic);
+    const texts = await generateText(dummyTopic);
 
     // assert
     expect(texts).toMatchObject([
-      { type: 'text', prompt: expect.any(String), text: dummyAnswer },
-      { type: 'text', prompt: expect.any(String), text: dummyAnswer },
-      { type: 'text', prompt: expect.any(String), text: dummyAnswer },
-      { type: 'text', prompt: expect.any(String), text: dummyAnswer },
-      { type: 'text', prompt: expect.any(String), text: dummyAnswer },
+      { text: { prompt: expect.any(String), text: dummyAnswer } },
+      { text: { prompt: expect.any(String), text: dummyAnswer } },
+      { text: { prompt: expect.any(String), text: dummyAnswer } },
+      { text: { prompt: expect.any(String), text: dummyAnswer } },
+      { text: { prompt: expect.any(String), text: dummyAnswer } },
     ]);
   });
 
@@ -89,38 +89,38 @@ describe('useSlideBuilder', () => {
     // arrange
     const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: dummyAnswer + '.' });
     useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { generate } = useSlideBuilder();
+    const { generateText } = useSlideBuilder();
 
     // act
-    const [slide] = await generate(dummyTopic);
+    const [slide] = await generateText(dummyTopic);
 
     // assert
-    expect(slide.text).toEqual(dummyAnswer);
+    expect(slide.text?.text).toEqual(dummyAnswer);
   });
 
   it('should be able to remove leading and trailing whitespaces in slides', async () => {
     // arrange
     const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: `  ${dummyAnswer}   ` });
     useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { generate } = useSlideBuilder();
+    const { generateText } = useSlideBuilder();
 
     // act
-    const [slide] = await generate(dummyTopic);
+    const [slide] = await generateText(dummyTopic);
 
     // assert
-    expect(slide.text).toEqual(dummyAnswer);
+    expect(slide.text?.text).toEqual(dummyAnswer);
   });
 
   it('should be able to remove leading and trailing quotes in slides', async () => {
     // arrange
     const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: `"${dummyAnswer}"` });
     useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { generate } = useSlideBuilder();
+    const { generateText } = useSlideBuilder();
 
     // act
-    const [slide] = await generate(dummyTopic);
+    const [slide] = await generateText(dummyTopic);
 
     // assert
-    expect(slide.text).toEqual(dummyAnswer);
+    expect(slide.text?.text).toEqual(dummyAnswer);
   });
 });

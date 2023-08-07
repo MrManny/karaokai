@@ -6,11 +6,11 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Card from 'primevue/card';
 import Textarea from 'primevue/textarea';
-import type { SlideText } from '../../types/slide';
+import type { Slide } from '../../types/slide';
 // CAUTION: this only exists to test/demo some GPT-3.5 interactions.
 // This will certainly change in a commit or ten.
 
-const { findTopic, generate } = useSlideBuilder();
+const { findImagePrompts, findTopic, generateImage, generateText } = useSlideBuilder();
 const { isBusy: isTopicBusy, op: topicOp } = useBusy();
 const { isBusy: areCardsBusy, op: cardsOp } = useBusy();
 
@@ -21,7 +21,7 @@ const props = defineProps({
     default: '',
   },
   slides: {
-    type: Array as PropType<SlideText[]>,
+    type: Array as PropType<Slide[]>,
     default: () => [],
   },
 });
@@ -44,15 +44,33 @@ const handleGenerateText = async () => {
   }
 
   await cardsOp(async () => {
-    const generated = await generate(props.topic);
+    const generated = await generateText(props.topic);
     emit('update:slides', generated);
   });
 };
 
 const handleUpdateText = (index: number, newText: string) => {
-  const newOption = [...props.slides];
-  newOption[index].text = newText;
-  emit('update:slides', newOption);
+  const newSlides: Slide[] = [...props.slides];
+  newSlides[index].text = { prompt: newSlides[index].text?.prompt, text: newText };
+  emit('update:slides', newSlides);
+};
+
+const handleGenerateImage = async (index: number) => {
+  const slide = props.slides[index];
+  const hasText = !!slide.text?.text;
+  if (!hasText) return;
+
+  await cardsOp(async () => {
+    const prompt: string = slide.image?.prompt ?? (await findImagePrompts(slide.text?.text ?? ''));
+    console.debug({ slide, prompt });
+    const image = await generateImage(prompt);
+    const newSlides: Slide[] = [...props.slides];
+    newSlides[index].image = {
+      base64: image,
+      prompt,
+    };
+    emit('update:slides', newSlides);
+  });
 };
 </script>
 
@@ -94,24 +112,34 @@ const handleUpdateText = (index: number, newText: string) => {
   </Card>
 
   <div class="card-deck" v-if="topic">
-    <Card v-for="(value, index) of slides" :key="value.text">
+    <Card v-for="(value, index) of slides" :key="index">
       <template #title>
         <span :id="`label_${index}`">
-          {{ value.prompt }}
+          {{ value.text?.prompt }}
         </span>
       </template>
       <template #content>
-        <Textarea
-          auto-resize
-          required
-          :data-testid="`text_${index}`"
-          :aria-labelledby="`label_${index}`"
-          :value="value.text"
-          @update:model-value="(newValue?: string) => handleUpdateText(index, newValue ?? '')"
-        />
+        <div>
+          <Textarea
+            auto-resize
+            required
+            :data-testid="`text_${index}`"
+            :aria-labelledby="`label_${index}`"
+            :value="value.text?.text"
+            @update:model-value="(newValue?: string) => handleUpdateText(index, newValue ?? '')"
+          />
+        </div>
+        <div v-if="value.image?.base64">
+          <img class="responsive" :src="`data:image/png;base64,${value.image?.base64}`" :alt="value.image?.prompt" />
+        </div>
       </template>
       <template #footer>
-        <Button label="Suggest">
+        <Button label="Suggest" :loading="areCardsBusy">
+          <template #icon>
+            <span class="pi pi-search" />
+          </template>
+        </Button>
+        <Button label="Image" @click="() => handleGenerateImage(index)" :loading="areCardsBusy">
           <template #icon>
             <span class="pi pi-search" />
           </template>
@@ -126,5 +154,9 @@ const handleUpdateText = (index: number, newText: string) => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(128px, 256px));
   gap: 8px;
+}
+
+.responsive {
+  width: 100%;
 }
 </style>

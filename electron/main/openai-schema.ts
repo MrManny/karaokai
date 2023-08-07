@@ -10,13 +10,6 @@ export const messageSchema = z.object({
 
 export type Message = z.infer<typeof messageSchema>;
 
-export const requestSchema = z.object({
-  model: modelSchema,
-  messages: z.array(messageSchema).min(1),
-});
-
-export type Request = z.infer<typeof requestSchema>;
-
 const responseChoice = z.object({
   finish_reason: z.string(),
   index: z.number().int().nonnegative(),
@@ -35,5 +28,3 @@ export const responseSchema = z.object({
     total_tokens: z.number().int().nonnegative(),
   }),
 });
-
-export type Response = z.infer<typeof responseSchema>;
