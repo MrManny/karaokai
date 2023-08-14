@@ -1,7 +1,6 @@
-import { useOpenAi } from '../useOpenAi';
 import type { Message } from '../useOpenAi';
-import type { Slide } from '../../types/slide';
-import { instructions, prompts, topic } from './prompts';
+import { useOpenAi } from '../useOpenAi';
+import { fallbackPrompt, instructions, topic } from './prompts';
 import { useStabilityAi } from '../useStabilityAi/useStabilityAi';
 import { styles } from './styles';
 import { artists } from './artists';
@@ -55,23 +54,11 @@ export function useSlideBuilder() {
     return cleanUp(answer.content);
   }
 
-  async function generateText(forTopic: string): Promise<Slide[]> {
-    const slides: Slide[] = [];
-    const history = buildInitialHistory(topic.summary(forTopic));
-
-    for (const { prompt, summary } of prompts) {
-      const messages = [...history, { role: 'user', content: prompt }];
-      const answer = await ask(messages);
-      const cleaned = cleanUp(answer.content);
-      if (summary) {
-        history.push({ role: 'system', content: summary(answer.content) });
-      } else {
-        history.push({ role: 'user', content: prompt }, { role: 'assistant', content: cleaned });
-      }
-      slides.push({ text: { prompt, text: cleaned } });
-    }
-
-    return slides;
+  async function generateText(forTopic: string, slideNumber?: number): Promise<string> {
+    const [history] = buildInitialHistory(topic.summary(forTopic));
+    const prompt = fallbackPrompt(slideNumber);
+    const messages = [history, { role: 'user', content: prompt }];
+    return await ask(messages).then((m) => cleanUp(m.content));
   }
 
   async function findImagePrompts(text: string): Promise<string> {

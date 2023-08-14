@@ -6,24 +6,19 @@ export const topic = {
   summary: (str: string) => `The topic is "${str}".`,
 };
 
-export const prompts = [
-  {
-    prompt: 'What are keywords for the first slide? Use buzzwords.',
-    summary: (str: string) => `The keywords for the first slide are: ${str}.`,
-  },
-  {
-    prompt: 'Write a relevant funny quote.',
-  },
-  {
-    prompt: 'What are the keywords for the second slide. Mix in a keyword that does not relate to this topic.',
-    summary: (str: string) => `The keywords for the second slide are: ${str}.`,
-  },
-  {
-    prompt: 'Write funny keywords to solve this problem.',
-    summary: (str: string) => `The solution is: ${str}.`,
-  },
-  {
-    prompt: 'Summarize your three key findings on a final slide with keywords.',
-    summary: (str: string) => `The key findings are: ${str}.`,
-  },
-];
+function suffix(num: number): string {
+  const lastDigit = num % 10;
+  const suffixFor1 = lastDigit === 1 && num !== 11;
+  if (suffixFor1) return 'st';
+  const suffixFor2 = lastDigit === 2 && num !== 21;
+  if (suffixFor2) return 'nd';
+  const suffixFor3 = lastDigit === 3 && num !== 13;
+  if (suffixFor3) return 'rd';
+  return 'th';
+}
+
+export const fallbackPrompt = (slideNumber?: number) => {
+  const slideNumberStr = slideNumber !== undefined ? `the ${slideNumber}${suffix(slideNumber)} slide` : `any slide`;
+
+  return `Write the text for the ${slideNumberStr}. It can be a fun quote, a silly pun, random statistics, or a few keywords.`;
+};

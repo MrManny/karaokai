@@ -13,8 +13,6 @@ export type SlideText = {
   text: string;
 };
 
-export type SlideContent = SlideImage | SlideText;
-
 export type Slide = {
   text?: SlideText;
   image?: SlideImage;
