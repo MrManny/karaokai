@@ -2,6 +2,11 @@ export const ChatGpt = {
   Chat: 'chat',
 } as const;
 
+export const Io = {
+  Load: 'load',
+  Save: 'save',
+} as const;
+
 export const StableDiffusionXL = {
   Generate: 'txt2img',
 } as const;

@@ -1,8 +1,9 @@
 import { BrowserWindow, ipcMain } from 'electron';
-import { indexHtml, preload, url } from './paths';
+import { indexHtml, preload, url } from '../paths';
 import './ipc-gpt';
 import './ipc-sdxl';
 import './ipc-vault';
+import './ipc-io';
 
 ipcMain.handle('open-win', (_, arg) => {
   const childWindow = new BrowserWindow({

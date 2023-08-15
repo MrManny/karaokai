@@ -18,7 +18,7 @@ const slideSchema = z.object({
     .optional(),
 });
 
-const presentationSchema = z.object({
+export const presentationSchema = z.object({
   topic: z.string(),
   slides: z.array(slideSchema),
   meta: z.record(z.unknown()).default({}),

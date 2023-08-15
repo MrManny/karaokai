@@ -1,8 +1,8 @@
 import { ipcMain } from 'electron';
 import { StableDiffusionXL } from './ipc-keys';
-import { getCredential } from './credentials-vault';
-import { Json } from './mimes';
-import { responseSchema } from './stabilityai-schema';
+import { getCredential } from '../credentials-vault';
+import { Json } from '../mimes';
+import { responseSchema } from '../stabilityai-schema';
 import { retry } from './retry';
 import { inspect } from 'util';
 
