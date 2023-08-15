@@ -7,6 +7,7 @@ import type { Slide } from '../../types/slide';
 import { computed, ref, shallowRef } from 'vue';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
+import SuggestButton from './SuggestButton.vue';
 
 const { isBusy, op } = useBusy();
 const { findTopic } = useSlideBuilder();
@@ -76,18 +77,12 @@ const updateSlide = (at: number, newSlide: Slide) => {
           v-model.trim="topic"
           :disabled="isBusy"
         />
-        <Button
+        <SuggestButton
           :loading="isBusy"
           class="p-inputgroup-addon"
-          aria-labelledby="topic"
-          data-testid="topic-random-button"
-          label="Random"
+          data-testid="suggest-topic-button"
           @click="suggestTopic"
-        >
-          <template #icon>
-            <span class="pi pi-search" />
-          </template>
-        </Button>
+        />
       </div>
     </div>
 

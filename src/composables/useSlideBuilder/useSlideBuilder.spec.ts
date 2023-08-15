@@ -29,7 +29,7 @@ describe('useSlideBuilder', () => {
 
   it('should be able to generate slide texts', async () => {
     // arrange
-    const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: dummyAnswer });
+    const mockAsk = vi.fn().mockResolvedValueOnce({ role: 'assistant', content: dummyAnswer });
     useOpenAi.mockReturnValue({ ask: mockAsk });
     const { generateText } = useSlideBuilder();
 
@@ -37,13 +37,7 @@ describe('useSlideBuilder', () => {
     const texts = await generateText(dummyTopic);
 
     // assert
-    expect(texts).toMatchObject([
-      { text: { prompt: expect.any(String), text: dummyAnswer } },
-      { text: { prompt: expect.any(String), text: dummyAnswer } },
-      { text: { prompt: expect.any(String), text: dummyAnswer } },
-      { text: { prompt: expect.any(String), text: dummyAnswer } },
-      { text: { prompt: expect.any(String), text: dummyAnswer } },
-    ]);
+    expect(texts).toEqual('Unit test me, baby!');
   });
 
   it('should be able to remove trailing puncts in topics', async () => {
@@ -87,15 +81,15 @@ describe('useSlideBuilder', () => {
 
   it('should be able to remove trailing puncts in slides', async () => {
     // arrange
-    const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: dummyAnswer + '.' });
+    const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: `${dummyAnswer}.` });
     useOpenAi.mockReturnValue({ ask: mockAsk });
     const { generateText } = useSlideBuilder();
 
     // act
-    const [slide] = await generateText(dummyTopic);
+    const text = await generateText(dummyTopic);
 
     // assert
-    expect(slide.text?.text).toEqual(dummyAnswer);
+    expect(text).toEqual(dummyAnswer);
   });
 
   it('should be able to remove leading and trailing whitespaces in slides', async () => {
@@ -105,10 +99,10 @@ describe('useSlideBuilder', () => {
     const { generateText } = useSlideBuilder();
 
     // act
-    const [slide] = await generateText(dummyTopic);
+    const text = await generateText(dummyTopic);
 
     // assert
-    expect(slide.text?.text).toEqual(dummyAnswer);
+    expect(text).toEqual(dummyAnswer);
   });
 
   it('should be able to remove leading and trailing quotes in slides', async () => {
@@ -118,9 +112,9 @@ describe('useSlideBuilder', () => {
     const { generateText } = useSlideBuilder();
 
     // act
-    const [slide] = await generateText(dummyTopic);
+    const text = await generateText(dummyTopic);
 
     // assert
-    expect(slide.text?.text).toEqual(dummyAnswer);
+    expect(text).toEqual(dummyAnswer);
   });
 });

@@ -29,8 +29,9 @@ const readAsData = (file: File): Promise<string> => {
 const dragover = (ev: DragEvent) => {
   ev.preventDefault();
   isHot.value = true;
+  if (!ev.dataTransfer) return;
+
   const item = ev.dataTransfer.items[0];
-  console.debug({ item, type: item.type });
   isRejecting.value = !!props.allowTypes?.length && !props.allowTypes.includes(item.type);
 };
 
