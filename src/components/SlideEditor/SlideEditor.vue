@@ -1,162 +1,180 @@
 <script setup lang="ts">
-import { useSlideBuilder } from '../../composables/useSlideBuilder';
-import type { PropType } from 'vue';
 import { useBusy } from '../../composables/useBusy';
+import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
-import Card from 'primevue/card';
-import Textarea from 'primevue/textarea';
 import type { Slide } from '../../types/slide';
-// CAUTION: this only exists to test/demo some GPT-3.5 interactions.
-// This will certainly change in a commit or ten.
+import { computed, ref, shallowRef } from 'vue';
+import SlideControls from './SlideControls.vue';
+import SlideViewer from '../SlideViewer/SlideViewer.vue';
+import SuggestButton from './SuggestButton.vue';
 
-const { findImagePrompts, findTopic, generateImage, generateText } = useSlideBuilder();
-const { isBusy: isTopicBusy, op: topicOp } = useBusy();
-const { isBusy: areCardsBusy, op: cardsOp } = useBusy();
+const { isBusy, op } = useBusy();
+const { findTopic } = useSlideBuilder();
+const slides = shallowRef<Slide[]>([]);
+const topic = ref<string>('');
+const activeSlideIndex = ref<number>(-1);
+const activeSlide = computed<Slide | undefined>(() =>
+  activeSlideIndex.value !== -1 ? slides.value[activeSlideIndex.value] : undefined
+);
+const canGoNext = computed(() => activeSlideIndex.value < slides.value.length && !!slides.value.length);
+const canGoPrev = computed(() => activeSlideIndex.value > 0 && !!slides.value.length);
 
-const emit = defineEmits(['update:topic', 'update:slides']);
-const props = defineProps({
-  topic: {
-    type: String,
-    default: '',
-  },
-  slides: {
-    type: Array as PropType<Slide[]>,
-    default: () => [],
-  },
-});
-
-const handleSetTopic = (topic: string) => {
-  emit('update:topic', topic.trim());
+const goToPrevious = () => {
+  if (!canGoPrev.value) return;
+  activeSlideIndex.value--;
 };
 
-const handleGenerateTopic = async () => {
-  await topicOp(async () => {
-    const topic = await findTopic();
-    handleSetTopic(topic);
+const goToNext = () => {
+  if (!canGoNext.value) return;
+  activeSlideIndex.value++;
+};
+
+const suggestTopic = async () => {
+  await op(async () => {
+    topic.value = await findTopic();
   });
 };
 
-const handleGenerateText = async () => {
-  if (!props.topic) {
-    console.error('No topic set.');
-    return;
+const moveThroughSlides = (ev: KeyboardEvent) => {
+  switch (ev.key) {
+    case 'ArrowLeft':
+      ev.preventDefault();
+      goToPrevious();
+      break;
+    case 'ArrowRight':
+      ev.preventDefault();
+      goToNext();
+      break;
   }
-
-  await cardsOp(async () => {
-    const generated = await generateText(props.topic);
-    emit('update:slides', generated);
-  });
 };
 
-const handleUpdateText = (index: number, newText: string) => {
-  const newSlides: Slide[] = [...props.slides];
-  newSlides[index].text = { prompt: newSlides[index].text?.prompt, text: newText };
-  emit('update:slides', newSlides);
+const insertEmptySlide = (at: number = slides.value.length) => {
+  const newSlides = [...slides.value];
+  newSlides.splice(at, 0, { text: { text: 'New slide, who dis?' } });
+  slides.value = newSlides;
+
+  if (activeSlideIndex.value !== -1) return;
+  activeSlideIndex.value = at;
 };
 
-const handleGenerateImage = async (index: number) => {
-  const slide = props.slides[index];
-  const hasText = !!slide.text?.text;
-  if (!hasText) return;
-
-  await cardsOp(async () => {
-    const prompt: string = slide.image?.prompt ?? (await findImagePrompts(slide.text?.text ?? ''));
-    console.debug({ slide, prompt });
-    const image = await generateImage(prompt);
-    const newSlides: Slide[] = [...props.slides];
-    newSlides[index].image = {
-      base64: image,
-      prompt,
-    };
-    emit('update:slides', newSlides);
-  });
+const updateSlide = (at: number, newSlide: Slide) => {
+  const newSlides = [...slides.value];
+  newSlides.splice(at, 1, newSlide);
+  slides.value = newSlides;
 };
 </script>
 
 <template>
-  <Card>
-    <template #title>
-      <span id="topic">Topic</span>
-    </template>
-    <template #content>
+  <div class="editor">
+    <div class="topic">
       <div class="p-inputgroup">
         <InputText
           aria-labelledby="topic"
           data-testid="topic-input"
+          placeholder="Topic"
           required
-          :value="topic"
-          @update:modelValue="(value?: string) => handleSetTopic(value ?? '')"
+          v-model.trim="topic"
+          :disabled="isBusy"
         />
-        <Button
-          @click="handleGenerateTopic"
-          :loading="isTopicBusy"
+        <SuggestButton
+          :loading="isBusy"
           class="p-inputgroup-addon"
-          aria-labelledby="topic"
-          data-testid="topic-random-button"
-          label="Random"
-        >
-          <template #icon>
-            <span class="pi pi-search" />
-          </template>
-        </Button>
+          data-testid="suggest-topic-button"
+          @click="suggestTopic"
+        />
       </div>
-    </template>
-    <template #footer>
-      <Button data-testid="generate-button" :loading="areCardsBusy" @click="handleGenerateText" label="Generate">
-        <template #icon>
-          <span class="pi pi-search" />
-        </template>
-      </Button>
-    </template>
-  </Card>
+    </div>
 
-  <div class="card-deck" v-if="topic">
-    <Card v-for="(value, index) of slides" :key="index">
-      <template #title>
-        <span :id="`label_${index}`">
-          {{ value.text?.prompt }}
-        </span>
-      </template>
-      <template #content>
-        <div>
-          <Textarea
-            auto-resize
-            required
-            :data-testid="`text_${index}`"
-            :aria-labelledby="`label_${index}`"
-            :value="value.text?.text"
-            @update:model-value="(newValue?: string) => handleUpdateText(index, newValue ?? '')"
-          />
-        </div>
-        <div v-if="value.image?.base64">
-          <img class="responsive" :src="`data:image/png;base64,${value.image?.base64}`" :alt="value.image?.prompt" />
-        </div>
-      </template>
-      <template #footer>
-        <Button label="Suggest" :loading="areCardsBusy">
-          <template #icon>
-            <span class="pi pi-search" />
-          </template>
-        </Button>
-        <Button label="Image" @click="() => handleGenerateImage(index)" :loading="areCardsBusy">
-          <template #icon>
-            <span class="pi pi-search" />
-          </template>
-        </Button>
-      </template>
-    </Card>
+    <div class="preview" v-if="activeSlide">
+      <SlideViewer :slide="activeSlide" />
+    </div>
+
+    <div class="controls" v-if="activeSlide">
+      <SlideControls
+        :slide="activeSlide"
+        :topic="topic"
+        @update:slide="(newSlide: Slide) => updateSlide(activeSlideIndex, newSlide)"
+      />
+    </div>
+
+    <div class="slide-deck" @keydown="(ev) => moveThroughSlides(ev)">
+      <Button
+        :disabled="!canGoPrev"
+        label="Previous"
+        @click="goToPrevious"
+        class="nav"
+        icon="pi pi-arrow-left"
+        icon-pos="left"
+      />
+
+      <div class="paginator">
+        <Button
+          v-for="(_, index) of slides"
+          :key="index"
+          :label="`#${index + 1}`"
+          :outlined="activeSlideIndex === index"
+          @click="() => (activeSlideIndex = index)"
+        />
+      </div>
+
+      <Button label="New" @click="() => insertEmptySlide()" class="nav" icon="pi pi-plus" />
+
+      <Button
+        :disabled="!canGoNext"
+        label="Next"
+        @click="goToNext"
+        class="nav"
+        icon="pi pi-arrow-right"
+        icon-pos="right"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped>
-.card-deck {
+.editor {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(128px, 256px));
   gap: 8px;
+  grid-template-columns: 3fr minmax(160px, 1fr);
+  grid-template-rows: min-content minmax(120px, 1fr) min-content;
+  grid-template-areas:
+    'Topic Topic'
+    'Preview EditorControls'
+    'SlideDeck SlideDeck';
+
+  height: 100%;
+  width: 100%;
 }
 
-.responsive {
-  width: 100%;
+.topic {
+  grid-area: Topic;
+}
+
+.slide-deck {
+  grid-area: SlideDeck;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 80px 1fr 80px 80px;
+}
+
+.slide-deck .paginator {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 4px;
+  overflow-x: auto;
+}
+
+.slide-deck .paginator > * {
+  min-width: 64px;
+}
+
+.preview {
+  grid-area: Preview;
+}
+
+.controls {
+  grid-area: EditorControls;
 }
 </style>
