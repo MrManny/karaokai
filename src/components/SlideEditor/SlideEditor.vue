@@ -5,8 +5,8 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import type { Slide } from '../../types/slide';
 import { computed, ref, shallowRef } from 'vue';
-import SlidePreview from '../SlidePreview/SlidePreview.vue';
 import SlideControls from './SlideControls.vue';
+import SlideViewer from '../SlideViewer/SlideViewer.vue';
 
 const { isBusy, op } = useBusy();
 const { findTopic } = useSlideBuilder();
@@ -92,11 +92,7 @@ const updateSlide = (at: number, newSlide: Slide) => {
     </div>
 
     <div class="preview" v-if="activeSlide">
-      <img
-        v-if="activeSlide.image?.base64"
-        :src="`data:image/png;base64,${activeSlide.image.base64}`"
-        :alt="activeSlide.image?.prompt ?? ''"
-      />
+      <SlideViewer :slide="activeSlide" />
     </div>
 
     <div class="controls" v-if="activeSlide">
@@ -117,16 +113,17 @@ const updateSlide = (at: number, newSlide: Slide) => {
         icon-pos="left"
       />
 
-      <SlidePreview
-        v-for="(slide, index) of slides"
-        :key="index"
-        :number="index + 1"
-        :slide="slide"
-        :class="{ active: activeSlideIndex === index }"
-        @click="() => (activeSlideIndex = index)"
-      />
+      <div class="paginator">
+        <Button
+          v-for="(_, index) of slides"
+          :key="index"
+          :label="`#${index + 1}`"
+          :outlined="activeSlideIndex === index"
+          @click="() => (activeSlideIndex = index)"
+        />
+      </div>
 
-      <Button label="New" @click="() => insertEmptySlide()" icon="pi pi-plus" />
+      <Button label="New" @click="() => insertEmptySlide()" class="nav" icon="pi pi-plus" />
 
       <Button
         :disabled="!canGoNext"
@@ -161,15 +158,21 @@ const updateSlide = (at: number, newSlide: Slide) => {
 
 .slide-deck {
   grid-area: SlideDeck;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 80px 1fr 80px 80px;
+}
+
+.slide-deck .paginator {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  gap: 8px;
-  align-items: stretch;
+  gap: 4px;
+  overflow-x: auto;
 }
 
-.slide-deck .nav {
-  align-self: center;
+.slide-deck .paginator > * {
+  min-width: 64px;
 }
 
 .preview {
@@ -178,9 +181,5 @@ const updateSlide = (at: number, newSlide: Slide) => {
 
 .controls {
   grid-area: EditorControls;
-}
-
-.active {
-  border: 2px solid var(--primary-50);
 }
 </style>

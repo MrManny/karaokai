@@ -5,6 +5,7 @@ import type { Slide } from '../../types/slide';
 import { useBusy } from '../../composables/useBusy';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import SuggestButton from './SuggestButton.vue';
+import ImageDrop from './ImageDrop.vue';
 
 const { isBusy, op } = useBusy();
 const { generateText, generateImage, findImagePrompts } = useSlideBuilder();
@@ -35,7 +36,7 @@ const updatePartial = <T extends keyof Slide>(key: T, update: Partial<Slide[T]>)
 
 const setText = (newText?: string) => updatePartial('text', { text: newText ?? '' });
 const setImagePrompt = (newPrompt?: string) => updatePartial('image', { prompt: newPrompt ?? '' });
-const setImage = (image?: string) => updatePartial('image', { base64: image ?? '', mime: 'image/png' });
+const setImage = (image?: string) => updatePartial('image', { base64: image ?? '' });
 
 const onSuggestText = async () => {
   await op(async () => {
@@ -97,6 +98,11 @@ const onGenerateImage = async () => {
       </span>
       <div class="action-bar">
         <SuggestButton :loading="isBusy" @click="onSuggestPrompt" />
+      </div>
+
+      <ImageDrop @uploaded="(image: string) => setImage(image)" />
+
+      <div class="action-bar">
         <SuggestButton :disabled="!slide.image?.prompt" :loading="isBusy" @click="onGenerateImage" label="Make image" />
       </div>
     </div>
