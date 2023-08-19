@@ -1,24 +1,25 @@
 <script setup lang="ts">
 import { useBusy } from '../../composables/useBusy';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
+import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
-import type { Slide } from '../../types/slide';
-import { computed, ref, shallowRef } from 'vue';
+import type { Slide } from '../../types/slide-schema';
+import { computed, ref } from 'vue';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import SuggestButton from './SuggestButton.vue';
+import { topic } from '../../composables/useSlideBuilder/prompts';
 
 const { isBusy, op } = useBusy();
 const { findTopic } = useSlideBuilder();
-const slides = shallowRef<Slide[]>([]);
-const topic = ref<string>('');
+const presentation = usePresentation();
 const activeSlideIndex = ref<number>(-1);
 const activeSlide = computed<Slide | undefined>(() =>
-  activeSlideIndex.value !== -1 ? slides.value[activeSlideIndex.value] : undefined
+  activeSlideIndex.value !== -1 ? presentation.slides[activeSlideIndex.value] : undefined
 );
-const canGoNext = computed(() => activeSlideIndex.value < slides.value.length && !!slides.value.length);
-const canGoPrev = computed(() => activeSlideIndex.value > 0 && !!slides.value.length);
+const canGoNext = computed(() => activeSlideIndex.value < presentation.slideCount && !!presentation.slideCount);
+const canGoPrev = computed(() => activeSlideIndex.value > 0 && presentation.slideCount);
 
 const goToPrevious = () => {
   if (!canGoPrev.value) return;
@@ -30,9 +31,9 @@ const goToNext = () => {
   activeSlideIndex.value++;
 };
 
-const suggestTopic = async () => {
+const suggestTopic = async (prompt: string) => {
   await op(async () => {
-    topic.value = await findTopic();
+    presentation.topic = await findTopic(prompt);
   });
 };
 
@@ -49,19 +50,15 @@ const moveThroughSlides = (ev: KeyboardEvent) => {
   }
 };
 
-const insertEmptySlide = (at: number = slides.value.length) => {
-  const newSlides = [...slides.value];
-  newSlides.splice(at, 0, { text: { text: 'New slide, who dis?' } });
-  slides.value = newSlides;
+const insertEmptySlide = (at: number = presentation.slideCount) => {
+  presentation.insertEmpty(at);
 
   if (activeSlideIndex.value !== -1) return;
   activeSlideIndex.value = at;
 };
 
 const updateSlide = (at: number, newSlide: Slide) => {
-  const newSlides = [...slides.value];
-  newSlides.splice(at, 1, newSlide);
-  slides.value = newSlides;
+  presentation.replace(at, newSlide);
 };
 </script>
 
@@ -74,14 +71,15 @@ const updateSlide = (at: number, newSlide: Slide) => {
           data-testid="topic-input"
           placeholder="Topic"
           required
-          v-model.trim="topic"
+          v-model.trim="presentation.topic"
           :disabled="isBusy"
         />
         <SuggestButton
           :loading="isBusy"
+          :initial-prompt="topic.prompt"
           class="p-inputgroup-addon"
           data-testid="suggest-topic-button"
-          @click="suggestTopic"
+          @suggest="suggestTopic"
         />
       </div>
     </div>
@@ -93,7 +91,7 @@ const updateSlide = (at: number, newSlide: Slide) => {
     <div class="controls" v-if="activeSlide">
       <SlideControls
         :slide="activeSlide"
-        :topic="topic"
+        :topic="presentation.topic"
         @update:slide="(newSlide: Slide) => updateSlide(activeSlideIndex, newSlide)"
       />
     </div>
@@ -110,7 +108,7 @@ const updateSlide = (at: number, newSlide: Slide) => {
 
       <div class="paginator">
         <Button
-          v-for="(_, index) of slides"
+          v-for="(_, index) of presentation.slides"
           :key="index"
           :label="`#${index + 1}`"
           :outlined="activeSlideIndex === index"

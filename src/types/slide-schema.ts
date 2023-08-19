@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const promptSchema = z.string().trim().default('');
 
-const slideSchema = z.object({
+export const slideSchema = z.object({
   text: z
     .object({
       text: z.string().trim(),
@@ -18,10 +18,4 @@ const slideSchema = z.object({
     .optional(),
 });
 
-export const presentationSchema = z.object({
-  topic: z.string(),
-  slides: z.array(slideSchema),
-  meta: z.record(z.unknown()).default({}),
-});
-
-export type Presentation = z.infer<typeof presentationSchema>;
+export type Slide = z.infer<typeof slideSchema>;

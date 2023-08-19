@@ -48,8 +48,8 @@ export function useSlideBuilder() {
     return picked;
   }
 
-  async function findTopic(): Promise<string> {
-    const messages = [...buildInitialHistory(), { role: 'user', content: topic.prompt }];
+  async function findTopic(prompt = topic.prompt): Promise<string> {
+    const messages = [...buildInitialHistory(), { role: 'user', content: prompt }];
     const answer = await ask(messages);
     return cleanUp(answer.content);
   }
