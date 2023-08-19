@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Slide } from '../../types/slide';
+import type { Slide } from '../../types/slide-schema';
 import type { PropType } from 'vue';
 
 defineProps({

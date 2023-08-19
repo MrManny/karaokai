@@ -7,6 +7,7 @@ export function useIo() {
     const reader = new FileReader();
     return new Promise((resolve, reject) => {
       reader.onload = (ev) => {
+        if (!ev.target) return;
         const raw = String(ev.target.result);
         const deserialized = JSON.parse(raw);
         const typed = presentationSchema.parse(deserialized);
