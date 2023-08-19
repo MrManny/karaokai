@@ -5,6 +5,7 @@
     "schedule:nonOfficeHours",
     ":reviewer(MrManny)",
     ":pinDependencies",
+    ":pinDevDependencies",
     ":maintainLockFilesWeekly",
     ":automergePatch",
     ":automergeRequireAllStatusChecks",
