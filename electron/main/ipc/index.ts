@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron';
-import { indexHtml, preload, url } from './paths';
+import { indexHtml, preload, url } from '../paths';
 import './ipc-gpt';
 import './ipc-sdxl';
 import './ipc-vault';

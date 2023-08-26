@@ -1,8 +1,8 @@
 import { ipcMain } from 'electron';
-import type { Message } from './openai-schema';
-import { responseSchema } from './openai-schema';
-import { Json } from './mimes';
-import { getCredential } from './credentials-vault';
+import type { Message } from '../openai-schema';
+import { responseSchema } from '../openai-schema';
+import { Json } from '../mimes';
+import { getCredential } from '../credentials-vault';
 import { ChatGpt } from './ipc-keys';
 import { retry } from './retry';
 

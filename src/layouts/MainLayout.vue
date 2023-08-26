@@ -15,9 +15,9 @@ import { RouteNames } from '../routes';
         @openSettings="$router.push({ name: RouteNames.Vault })"
       />
     </div>
-    <main>
+    <div>
       <slot />
-    </main>
+    </div>
   </div>
 </template>
 

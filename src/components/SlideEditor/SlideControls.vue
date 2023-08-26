@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import type { PropType } from 'vue';
+import type { Slide } from '../../types/slide-schema';
 import Textarea from 'primevue/textarea';
-import type { Slide } from '../../types/slide';
 import { useBusy } from '../../composables/useBusy';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import SuggestButton from './SuggestButton.vue';
 import ImageDrop from './ImageDrop.vue';
+import ActionBar from '../ActionBar/ActionBar.vue';
 
 const { isBusy, op } = useBusy();
 const { generateText, generateImage, findImagePrompts } = useSlideBuilder();
@@ -79,9 +80,9 @@ const onGenerateImage = async () => {
           <label for="text-input">Text</label>
         </span>
 
-        <div class="action-bar">
+        <ActionBar>
           <SuggestButton :loading="isBusy" @click="onSuggestText" />
-        </div>
+        </ActionBar>
       </div>
     </div>
 
@@ -96,15 +97,15 @@ const onGenerateImage = async () => {
         />
         <label for="text-input">Image Prompt</label>
       </span>
-      <div class="action-bar">
+      <ActionBar>
         <SuggestButton :loading="isBusy" @click="onSuggestPrompt" />
-      </div>
+      </ActionBar>
 
       <ImageDrop @uploaded="(image: string) => setImage(image)" />
 
-      <div class="action-bar">
+      <ActionBar>
         <SuggestButton :disabled="!slide.image?.prompt" :loading="isBusy" @click="onGenerateImage" label="Make image" />
-      </div>
+      </ActionBar>
     </div>
   </form>
 </template>
@@ -114,13 +115,6 @@ const onGenerateImage = async () => {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.action-bar {
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  justify-items: stretch;
 }
 
 textarea {

@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { setCredential, vaultKeys } from './credentials-vault';
+import { setCredential, vaultKeys } from '../credentials-vault';
 import { Vault } from './ipc-keys';
 
 ipcMain.handle(Vault.SetToken, (_, type: string, token: string) => {
