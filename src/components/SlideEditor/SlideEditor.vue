@@ -5,11 +5,19 @@ import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import type { Slide } from '../../types/slide-schema';
-import { computed, ref } from 'vue';
+import { computed, ref, unref } from 'vue';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import SuggestButton from './SuggestButton.vue';
 import { topic } from '../../composables/useSlideBuilder/prompts';
+
+const emit = defineEmits(['play']);
+const props = defineProps({
+  disabled: {
+    type: Boolean,
+    default: () => false,
+  },
+});
 
 const { isBusy, op } = useBusy();
 const { findTopic } = useSlideBuilder();
@@ -59,6 +67,12 @@ const insertEmptySlide = (at: number = presentation.slideCount) => {
 
 const updateSlide = (at: number, newSlide: Slide) => {
   presentation.replace(at, newSlide);
+};
+
+const playPresentation = () => {
+  if (props.disabled) return;
+  const presentationCopy = { ...unref(presentation) };
+  emit('play', presentationCopy);
 };
 </script>
 
@@ -126,6 +140,8 @@ const updateSlide = (at: number, newSlide: Slide) => {
         icon="pi pi-arrow-right"
         icon-pos="right"
       />
+
+      <Button :disabled="disabled" label="Play" @click="playPresentation" class="nav" />
     </div>
   </div>
 </template>

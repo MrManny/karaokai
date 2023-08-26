@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import SlideEditor from '../components/SlideEditor/SlideEditor.vue';
+import { usePresenter } from '../composables/usePresenter';
+import type { Presentation } from '../types/presentation-schema';
+
+const { start, isRunning } = usePresenter();
+
+const playPresentation = (presentation: Presentation) => {
+  start(presentation);
+};
 </script>
 
 <template>
   <div class="editor">
-    <SlideEditor />
+    <SlideEditor @play="(presentation: Presentation) => playPresentation(presentation)" :disabled="isRunning" />
   </div>
 </template>
 
