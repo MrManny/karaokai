@@ -1,12 +1,23 @@
+import { vi } from 'vitest';
 import { render } from '@testing-library/vue';
 import type { RenderOptions, RenderResult } from '@testing-library/vue';
 import PrimeVue from 'primevue/config';
+import { RouterLinkStub } from '@vue/test-utils';
+import { createTestingPinia } from '@pinia/testing';
 
-export const defaultPlugins: RenderOptions['global']['plugins'] = [PrimeVue];
+export const defaultPlugins: RenderOptions['global']['plugins'] = [
+  PrimeVue,
+  createTestingPinia({
+    createSpy: vi.fn(),
+  }),
+];
 
 export const defaultOptions: RenderOptions = {
   global: {
     plugins: defaultPlugins,
+    stubs: {
+      RouterLink: RouterLinkStub,
+    },
   },
 };
 

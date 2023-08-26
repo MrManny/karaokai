@@ -10,7 +10,6 @@ import { RouteNames } from '../routes';
       <Brand @click="$router.push({ name: RouteNames.Main })" />
 
       <MainActions
-        data-testid="main-actions"
         @openEditor="$router.push({ name: RouteNames.Editor })"
         @openSettings="$router.push({ name: RouteNames.Vault })"
       />
