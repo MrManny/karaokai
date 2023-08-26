@@ -5,6 +5,7 @@ import { computed, unref } from 'vue';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 
+const emit = defineEmits(['saved']);
 const presentation = usePresentation();
 const { save } = useIo();
 const fileName = computed({
@@ -18,7 +19,9 @@ const saver = () => {
     topic: unref(presentation.topic),
     slides: unref(presentation.slides),
   };
+
   save(fileName.value, copy);
+  emit('saved');
 };
 </script>
 
