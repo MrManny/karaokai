@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import SlideEditor from '../components/SlideEditor/SlideEditor.vue';
+import { useRouter } from 'vue-router';
+import { RouteNames } from '../routes';
+
+const { push } = useRouter();
+
+const playPresentation = () => {
+  void push({ name: RouteNames.Presenter });
+};
 </script>
 
 <template>
   <div class="editor">
-    <SlideEditor />
+    <SlideEditor @play="playPresentation" />
   </div>
 </template>
 

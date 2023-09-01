@@ -11,6 +11,14 @@ import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import SuggestButton from './SuggestButton.vue';
 import { topic } from '../../composables/useSlideBuilder/prompts';
 
+const emit = defineEmits(['play']);
+const props = defineProps({
+  disabled: {
+    type: Boolean,
+    default: () => false,
+  },
+});
+
 const { isBusy, op } = useBusy();
 const { findTopic } = useSlideBuilder();
 const presentation = usePresentation();
@@ -59,6 +67,11 @@ const insertEmptySlide = (at: number = presentation.slideCount) => {
 
 const updateSlide = (at: number, newSlide: Slide) => {
   presentation.replace(at, newSlide);
+};
+
+const playPresentation = () => {
+  if (props.disabled) return;
+  emit('play');
 };
 </script>
 
@@ -126,6 +139,8 @@ const updateSlide = (at: number, newSlide: Slide) => {
         icon="pi pi-arrow-right"
         icon-pos="right"
       />
+
+      <Button :disabled="disabled" label="Play" @click="playPresentation" class="nav" />
     </div>
   </div>
 </template>
@@ -153,7 +168,7 @@ const updateSlide = (at: number, newSlide: Slide) => {
   grid-area: SlideDeck;
   display: grid;
   gap: 8px;
-  grid-template-columns: 80px 1fr 80px 80px;
+  grid-template-columns: 80px 1fr repeat(3, 80px);
 }
 
 .slide-deck .paginator {

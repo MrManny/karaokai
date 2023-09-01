@@ -2,11 +2,13 @@ import Title from './pages/Title.vue';
 import MainLayout from './layouts/MainLayout.vue';
 import Vault from './pages/Vault.vue';
 import Editor from './pages/Editor.vue';
+import PresenterLayout from './layouts/PresenterLayout.vue';
 
 export const enum RouteNames {
   Main = 'main',
   Vault = 'vault',
   Editor = 'editor',
+  Presenter = 'presenter',
 }
 
 export const routes = [
@@ -33,5 +35,10 @@ export const routes = [
     meta: {
       layout: MainLayout,
     },
+  },
+  {
+    path: '/presentation',
+    name: RouteNames.Presenter,
+    component: PresenterLayout,
   },
 ];
