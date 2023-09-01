@@ -39,9 +39,6 @@ export const routes = [
   {
     path: '/presentation',
     name: RouteNames.Presenter,
-    component: null,
-    meta: {
-      layout: PresenterLayout,
-    },
+    component: PresenterLayout,
   },
 ];

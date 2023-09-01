@@ -5,7 +5,7 @@ import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import type { Slide } from '../../types/slide-schema';
-import { computed, ref, unref } from 'vue';
+import { computed, ref } from 'vue';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import SuggestButton from './SuggestButton.vue';
@@ -71,8 +71,7 @@ const updateSlide = (at: number, newSlide: Slide) => {
 
 const playPresentation = () => {
   if (props.disabled) return;
-  const presentationCopy = { ...unref(presentation) };
-  emit('play', presentationCopy);
+  emit('play');
 };
 </script>
 
@@ -169,7 +168,7 @@ const playPresentation = () => {
   grid-area: SlideDeck;
   display: grid;
   gap: 8px;
-  grid-template-columns: 80px 1fr 80px 80px;
+  grid-template-columns: 80px 1fr repeat(3, 80px);
 }
 
 .slide-deck .paginator {
