@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useIo } from './useIo';
+import { sleep } from '../../utils/test-util';
 
-const sleep = (msec: number) => new Promise((resolve) => setTimeout(resolve, msec));
 const readAsTextMock = vi.fn();
 vi.spyOn(window, 'FileReader').mockImplementation(() => ({
   DONE: FileReader.DONE,

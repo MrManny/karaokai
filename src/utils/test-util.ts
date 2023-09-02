@@ -29,3 +29,7 @@ export function renderComponent(
   const effectiveOptions: RenderOptions = { ...options, props };
   return render(component, effectiveOptions);
 }
+
+export function sleep(msec: number) {
+  return new Promise((resolve) => setTimeout(resolve, msec));
+}
