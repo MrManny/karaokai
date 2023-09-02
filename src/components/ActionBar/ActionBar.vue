@@ -1,5 +1,5 @@
 <template>
-  <div class="action-bar">
+  <div class="action-bar" data-testid="action-bar">
     <slot />
   </div>
 </template>

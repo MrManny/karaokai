@@ -16,14 +16,14 @@ const imageBackgroundStyle = computed(() => ({
 </script>
 
 <template>
-  <div class="slide" :style="imageBackgroundStyle">
+  <div class="slide" data-testid="slide" :style="imageBackgroundStyle">
     <div class="text-container">
-      <p v-if="slide.text?.text">
+      <p v-if="slide.text?.text" data-testid="slide-text">
         {{ slide.text?.text }}
       </p>
     </div>
 
-    <div class="image-container"></div>
+    <div></div>
   </div>
 </template>
 
@@ -33,7 +33,7 @@ const imageBackgroundStyle = computed(() => ({
   background-color: #000000;
   display: grid;
   gap: 8px;
-  grid-template-columns: minmax(160px, 1fr) 3fr;
+  grid-template-columns: minmax(160px, 1fr) 2fr;
   align-items: center;
   justify-items: center;
   width: 100%;

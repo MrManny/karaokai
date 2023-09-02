@@ -28,7 +28,7 @@ const saver = () => {
 <template>
   <div class="dialog">
     <span class="p-float-label">
-      <InputText id="text-input" v-model="fileName" />
+      <InputText id="text-input" data-testid="filename-input" v-model="fileName" />
       <label for="text-input">File name</label>
     </span>
     <Button @click="saver" label="Save" />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { PropType } from 'vue';
 
 const isHot = ref<boolean>(false);
@@ -13,9 +13,19 @@ const props = defineProps({
     type: Array as PropType<string[]>,
     default: () => ['image/png', 'image/jpeg', 'image/webp', 'image/gif'],
   },
+  previewImage: {
+    type: String,
+    default: () => '',
+  },
 });
 
 const emit = defineEmits(['uploaded']);
+const previewCss = computed(() => {
+  if (!props.previewImage) return {};
+  return {
+    'background-image': `url(${props.previewImage})`,
+  };
+});
 
 const readAsData = (file: File): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
@@ -64,13 +74,14 @@ const drop = async (ev: DragEvent) => {
   <div
     class="drop-zone"
     :class="{ disabled: disabled, hot: isHot, reject: isRejecting }"
+    :style="previewCss"
+    data-testid="image-drop"
     @dragover="dragover"
     @dragleave="dragleave"
     @drop="drop"
   >
     <div v-if="!isHot">Drop an image here</div>
     <div v-else-if="!isRejecting">Okay, now let go!</div>
-    <div v-else>Well, fuck.</div>
   </div>
 </template>
 
@@ -82,6 +93,16 @@ const drop = async (ev: DragEvent) => {
   aspect-ratio: 16/9;
   min-width: 96px;
   min-height: 54px;
+
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+.drop-zone > div {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  padding: 8px 12px;
 }
 
 .drop-zone.hot {

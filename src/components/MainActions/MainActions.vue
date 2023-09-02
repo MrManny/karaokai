@@ -46,11 +46,11 @@ const toggle = (ev: Event) => {
   <Button type="button" label="File" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu" />
   <Menu ref="menu" id="overlay_menu" :model="items" popup />
 
-  <Dialog :visible="isLoadVisible" @hide="() => showLoadDialog(false)" header="Load" modal>
+  <Dialog :visible="isLoadVisible" @hide="() => showLoadDialog(false)" header="Load" modal data-testid="load-dialog">
     <LoadDialog @loaded="() => onLoaded()" />
   </Dialog>
 
-  <Dialog :visible="isSaveVisible" @hide="() => showSaveDialog(false)" header="Save" modal>
+  <Dialog :visible="isSaveVisible" @hide="() => showSaveDialog(false)" header="Save" modal data-testid="save-dialog">
     <SaveDialog @saved="() => showSaveDialog(false)" />
   </Dialog>
 </template>

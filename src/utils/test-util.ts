@@ -5,12 +5,11 @@ import PrimeVue from 'primevue/config';
 import { RouterLinkStub } from '@vue/test-utils';
 import { createTestingPinia } from '@pinia/testing';
 
-export const defaultPlugins: RenderOptions['global']['plugins'] = [
-  PrimeVue,
-  createTestingPinia({
-    createSpy: vi.fn(),
-  }),
-];
+export const testingPinia = createTestingPinia({
+  createSpy: vi.fn(),
+});
+
+export const defaultPlugins: RenderOptions['global']['plugins'] = [PrimeVue, testingPinia];
 
 export const defaultOptions: RenderOptions = {
   global: {
@@ -29,4 +28,8 @@ export function renderComponent(
 ): RenderResult {
   const effectiveOptions: RenderOptions = { ...options, props };
   return render(component, effectiveOptions);
+}
+
+export function sleep(msec: number) {
+  return new Promise((resolve) => setTimeout(resolve, msec));
 }

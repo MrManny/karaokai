@@ -7,6 +7,7 @@ import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import SuggestButton from './SuggestButton.vue';
 import ImageDrop from './ImageDrop.vue';
 import ActionBar from '../ActionBar/ActionBar.vue';
+import { computed } from 'vue';
 
 const { isBusy, op } = useBusy();
 const { generateText, generateImage, findImagePrompts } = useSlideBuilder();
@@ -27,6 +28,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:slide']);
+const imagePreview = computed(() => props.slide.image?.base64 ?? '');
 
 const updatePartial = <T extends keyof Slide>(key: T, update: Partial<Slide[T]>) => {
   const oldValue: Slide[T] = props.slide[key];
@@ -67,12 +69,13 @@ const onGenerateImage = async () => {
 
 <template>
   <form class="stacked">
-    <div>
+    <div data-testid="topic" :data-topic="topic">
       <div class="stacked">
         <h2>Text</h2>
         <span class="p-float-label">
           <Textarea
             id="text-input"
+            data-testid="text-input"
             :disabled="disabled"
             :value="slide.text?.text ?? ''"
             @update:modelValue="(value?: string) => setText(value)"
@@ -81,7 +84,7 @@ const onGenerateImage = async () => {
         </span>
 
         <ActionBar>
-          <SuggestButton :loading="isBusy" @click="onSuggestText" />
+          <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestText" />
         </ActionBar>
       </div>
     </div>
@@ -91,6 +94,7 @@ const onGenerateImage = async () => {
       <span class="p-float-label">
         <Textarea
           id="image-prompt-input"
+          data-testid="image-prompt-input"
           :disabled="disabled"
           :value="slide.image?.prompt ?? ''"
           @update:modelValue="(value?: string) => setImagePrompt(value)"
@@ -98,13 +102,18 @@ const onGenerateImage = async () => {
         <label for="text-input">Image Prompt</label>
       </span>
       <ActionBar>
-        <SuggestButton :loading="isBusy" @click="onSuggestPrompt" />
+        <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestPrompt" />
       </ActionBar>
 
-      <ImageDrop @uploaded="(image: string) => setImage(image)" />
+      <ImageDrop :disabled="disabled" @uploaded="(image: string) => setImage(image)" :preview-image="imagePreview" />
 
       <ActionBar>
-        <SuggestButton :disabled="!slide.image?.prompt" :loading="isBusy" @click="onGenerateImage" label="Make image" />
+        <SuggestButton
+          :disabled="disabled || !slide.image?.prompt"
+          :loading="isBusy"
+          @click="onGenerateImage"
+          label="Make image"
+        />
       </ActionBar>
     </div>
   </form>

@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import Textarea from 'primevue/textarea';
 import { ref } from 'vue';
 import type { PropType } from 'vue';
-import ActionBar from '../ActionBar/ActionBar.vue';
+import SuggestDialog from './SuggestDialog.vue';
 
-const props = defineProps({
+defineProps({
   disabled: {
     type: Boolean,
     default: false,
@@ -35,10 +33,9 @@ const props = defineProps({
 });
 const emit = defineEmits(['suggest']);
 const isDialogVisible = ref<boolean>(false);
-const prompt = ref<string>(props.initialPrompt);
 
-const onAccept = () => {
-  emit('suggest', prompt.value);
+const onAccept = (prompt: string) => {
+  emit('suggest', prompt);
   isDialogVisible.value = false;
 };
 const onCancel = () => {
@@ -48,34 +45,22 @@ const onCancel = () => {
 
 <template>
   <Button
+    data-testid="suggest-toggle"
     :disabled="isDialogVisible"
     :loading="loading"
     :label="label"
     @click="() => (isDialogVisible = true)"
     icon="pi pi-search"
   />
-  <Dialog :visible="isDialogVisible" @hide="onCancel" header="Suggest" modal>
-    <p v-if="guidance">
-      {{ guidance }}
-    </p>
-    <Textarea class="bigger" v-model.trim="prompt" />
-
-    <div v-if="examples.length">
-      <p>Examples:</p>
-      <ul>
-        <li v-for="example of examples" :key="example">
-          {{ example }}
-        </li>
-      </ul>
-    </div>
-
-    <template #footer>
-      <ActionBar>
-        <Button label="Cancel" severity="secondary" @click="onCancel" />
-        <Button :label="label" icon="pi pi-search" @click="onAccept" />
-      </ActionBar>
-    </template>
-  </Dialog>
+  <SuggestDialog
+    :initial-prompt="initialPrompt"
+    :examples="examples"
+    :guidance="guidance"
+    :label="label"
+    :is-dialog-visible="isDialogVisible"
+    @close="onCancel"
+    @suggest="onAccept"
+  />
 </template>
 
 <style scoped>
