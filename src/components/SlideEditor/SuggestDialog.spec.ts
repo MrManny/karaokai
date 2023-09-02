@@ -9,7 +9,6 @@ const getAcceptButton = (): HTMLButtonElement => screen.queryByTestId('accept-bu
 const getGuidance = () => screen.queryByTestId('guidance');
 const getPromptInput = (): HTMLTextAreaElement => screen.queryByTestId('prompt-input');
 const getExamples = () => screen.queryAllByTestId('example');
-
 const sleepOneTick = () => new Promise<void>((resolve) => nextTick(() => resolve()));
 
 const renderVisibleDialog = async (props: Record<string, unknown> = {}) => {

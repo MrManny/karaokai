@@ -82,7 +82,6 @@ const drop = async (ev: DragEvent) => {
   >
     <div v-if="!isHot">Drop an image here</div>
     <div v-else-if="!isRejecting">Okay, now let go!</div>
-    <div v-else>Well, fuck.</div>
   </div>
 </template>
 
