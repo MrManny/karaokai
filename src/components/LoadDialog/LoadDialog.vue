@@ -17,7 +17,12 @@ const uploader = async (event: FileUploadRemoveUploadedFile) => {
 </script>
 
 <template>
-  <FileUpload mode="basic" name="presentation_upload" accept="application/json" custom-upload @select="uploader" />
+  <FileUpload
+    data-testid="load-input"
+    mode="basic"
+    name="presentation_upload"
+    accept="application/json"
+    custom-upload
+    @select="uploader"
+  />
 </template>
-
-<style scoped></style>

@@ -5,7 +5,7 @@ import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import type { Slide } from '../../types/slide-schema';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import SuggestButton from './SuggestButton.vue';
@@ -28,6 +28,10 @@ const activeSlide = computed<Slide | undefined>(() =>
 );
 const canGoNext = computed(() => activeSlideIndex.value < presentation.slideCount && !!presentation.slideCount);
 const canGoPrev = computed(() => activeSlideIndex.value > 0 && presentation.slideCount);
+
+onMounted(() => {
+  if (presentation.slideCount) activeSlideIndex.value = 0;
+});
 
 const goToPrevious = () => {
   if (!canGoPrev.value) return;
@@ -76,7 +80,7 @@ const playPresentation = () => {
 </script>
 
 <template>
-  <div class="editor">
+  <div class="editor" data-testid="editor">
     <div class="topic">
       <div class="p-inputgroup">
         <InputText
@@ -87,13 +91,7 @@ const playPresentation = () => {
           v-model.trim="presentation.topic"
           :disabled="isBusy"
         />
-        <SuggestButton
-          :loading="isBusy"
-          :initial-prompt="topic.prompt"
-          class="p-inputgroup-addon"
-          data-testid="suggest-topic-button"
-          @suggest="suggestTopic"
-        />
+        <SuggestButton :loading="isBusy" :initial-prompt="topic.prompt" @suggest="suggestTopic" />
       </div>
     </div>
 
@@ -122,6 +120,7 @@ const playPresentation = () => {
       <div class="paginator">
         <Button
           v-for="(_, index) of presentation.slides"
+          :data-testid="`slide-${index}-button`"
           :key="index"
           :label="`#${index + 1}`"
           :outlined="activeSlideIndex === index"
