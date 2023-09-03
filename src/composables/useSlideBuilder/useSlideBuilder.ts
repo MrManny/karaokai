@@ -2,8 +2,7 @@ import type { Message } from '../useOpenAi';
 import { useOpenAi } from '../useOpenAi';
 import { fallbackPrompt, instructions, topic } from './prompts';
 import { useStabilityAi } from '../useStabilityAi/useStabilityAi';
-import { styles } from './styles';
-import { artists } from './artists';
+import { applyStyle, styles } from './styles';
 
 const TrailingPunctExpr = /\.\s*$/;
 
@@ -35,9 +34,9 @@ export function useSlideBuilder() {
     ];
   }
 
-  function pick(ary: string[], howMany = 1): string[] {
-    const pool: string[] = [...ary];
-    const picked: string[] = [];
+  function pick<T>(ary: T[], howMany = 1): T[] {
+    const pool: T[] = [...ary];
+    const picked: T[] = [];
     for (let i = 0; i < howMany; i++) {
       const len = pool.length;
       const pickIndex = Math.floor(Math.random() * len);
@@ -72,8 +71,9 @@ export function useSlideBuilder() {
     ];
     const { content: keywords } = await ask(messages);
     const [style] = pick(styles);
-    const artist = pick(artists, 2).join(' and ');
-    return `${keywords}, ${style}, by ${artist}`;
+    // TODO: support for negative prompts, which will come later
+    const { positivePrompt } = applyStyle(style, keywords);
+    return positivePrompt;
   }
 
   async function generateImage(prompt: string): Promise<string> {

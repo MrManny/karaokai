@@ -48,21 +48,18 @@ const onSuggestText = async () => {
   });
 };
 
-const onSuggestPrompt = async () => {
-  if (!props.slide.text?.text) return;
-  const { text } = props.slide.text;
+const onSuggestPrompt = async (input: string) => {
   await op(async () => {
-    const prompt = await findImagePrompts(text);
+    const prompt = await findImagePrompts(input);
     setImagePrompt(prompt);
   });
 };
 
-const onGenerateImage = async () => {
-  if (!props.slide.image?.prompt) return;
-  const { prompt } = props.slide.image;
+const onGenerateImage = async (input: string) => {
   await op(async () => {
-    const image = await generateImage(prompt);
-    setImage(image);
+    setImagePrompt(input);
+    const image = await generateImage(input);
+    setImage(`data:image/png;base64,${image}`);
   });
 };
 </script>
@@ -102,7 +99,12 @@ const onGenerateImage = async () => {
         <label for="text-input">Image Prompt</label>
       </span>
       <ActionBar>
-        <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestPrompt" />
+        <SuggestButton
+          :disabled="disabled"
+          :loading="isBusy"
+          :initial-prompt="slide.text?.text"
+          @suggest="onSuggestPrompt"
+        />
       </ActionBar>
 
       <ImageDrop :disabled="disabled" @uploaded="(image: string) => setImage(image)" :preview-image="imagePreview" />
@@ -111,7 +113,8 @@ const onGenerateImage = async () => {
         <SuggestButton
           :disabled="disabled || !slide.image?.prompt"
           :loading="isBusy"
-          @click="onGenerateImage"
+          :initial-prompt="slide.image?.prompt"
+          @suggest="onGenerateImage"
           label="Make image"
         />
       </ActionBar>
