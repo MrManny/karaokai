@@ -21,15 +21,18 @@ describe('useStabilityAi', () => {
     ipcRenderer.invoke.mockResolvedValueOnce(base64data);
 
     // act
-    const image = await text2image(
-      'A beautiful unit test like the world has not seen before, by Russ Mills and Lisa Frank and Alphonse Mucha'
-    );
+    const image = await text2image({
+      positivePrompt:
+        'A beautiful unit test like the world has not seen before, by Russ Mills and Lisa Frank and Alphonse Mucha',
+      negativePrompt: '',
+    });
 
     // assert
-    expect(ipcRenderer.invoke).toBeCalledWith(
-      'txt2img',
-      'A beautiful unit test like the world has not seen before, by Russ Mills and Lisa Frank and Alphonse Mucha'
-    );
+    expect(ipcRenderer.invoke).toBeCalledWith('txt2img', {
+      positivePrompt:
+        'A beautiful unit test like the world has not seen before, by Russ Mills and Lisa Frank and Alphonse Mucha',
+      negativePrompt: '',
+    });
     expect(image).deep.equals(base64data);
   });
 });

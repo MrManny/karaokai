@@ -2,8 +2,8 @@ import type { Message } from '../useOpenAi';
 import { useOpenAi } from '../useOpenAi';
 import { fallbackPrompt, instructions, topic } from './prompts';
 import { useStabilityAi } from '../useStabilityAi/useStabilityAi';
-import { styles } from './styles';
-import { artists } from './artists';
+import { applyStyle, styles } from './styles';
+import type { StyledPrompt } from './styles';
 
 const TrailingPunctExpr = /\.\s*$/;
 
@@ -35,9 +35,9 @@ export function useSlideBuilder() {
     ];
   }
 
-  function pick(ary: string[], howMany = 1): string[] {
-    const pool: string[] = [...ary];
-    const picked: string[] = [];
+  function pick<T>(ary: T[], howMany = 1): T[] {
+    const pool: T[] = [...ary];
+    const picked: T[] = [];
     for (let i = 0; i < howMany; i++) {
       const len = pool.length;
       const pickIndex = Math.floor(Math.random() * len);
@@ -61,7 +61,7 @@ export function useSlideBuilder() {
     return await ask(messages).then((m) => cleanUp(m.content));
   }
 
-  async function findImagePrompts(text: string): Promise<string> {
+  async function findImagePrompts(text: string): Promise<StyledPrompt> {
     const messages: Message[] = [
       {
         role: 'system',
@@ -72,12 +72,14 @@ export function useSlideBuilder() {
     ];
     const { content: keywords } = await ask(messages);
     const [style] = pick(styles);
-    const artist = pick(artists, 2).join(' and ');
-    return `${keywords}, ${style}, by ${artist}`;
+    return applyStyle(style, keywords);
   }
 
-  async function generateImage(prompt: string): Promise<string> {
-    return await text2image(prompt);
+  async function generateImage(positivePrompt: string, negativePrompt?: string): Promise<string> {
+    return await text2image({
+      positivePrompt,
+      negativePrompt: negativePrompt ?? '',
+    });
   }
 
   return {

@@ -2,6 +2,7 @@
 import type { PropType } from 'vue';
 import type { Slide } from '../../types/slide-schema';
 import Textarea from 'primevue/textarea';
+import Button from 'primevue/button';
 import { useBusy } from '../../composables/useBusy';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import SuggestButton from './SuggestButton.vue';
@@ -38,7 +39,7 @@ const updatePartial = <T extends keyof Slide>(key: T, update: Partial<Slide[T]>)
 };
 
 const setText = (newText?: string) => updatePartial('text', { text: newText ?? '' });
-const setImagePrompt = (newPrompt?: string) => updatePartial('image', { prompt: newPrompt ?? '' });
+const setImagePrompt = (positive: string, negative?: string) => updatePartial('image', { prompt: positive, negative });
 const setImage = (image?: string) => updatePartial('image', { base64: image ?? '' });
 
 const onSuggestText = async () => {
@@ -48,21 +49,21 @@ const onSuggestText = async () => {
   });
 };
 
-const onSuggestPrompt = async () => {
-  if (!props.slide.text?.text) return;
-  const { text } = props.slide.text;
+const onSuggestPrompt = async (input: string) => {
   await op(async () => {
-    const prompt = await findImagePrompts(text);
-    setImagePrompt(prompt);
+    const { positivePrompt, negativePrompt } = await findImagePrompts(input);
+    setImagePrompt(positivePrompt, negativePrompt);
   });
 };
 
 const onGenerateImage = async () => {
-  if (!props.slide.image?.prompt) return;
-  const { prompt } = props.slide.image;
+  const positive = props.slide.image?.prompt;
+  if (!positive) return;
+
+  const negative = props.slide.image?.negative;
   await op(async () => {
-    const image = await generateImage(prompt);
-    setImage(image);
+    const image = await generateImage(positive, negative);
+    setImage(`data:image/png;base64,${image}`);
   });
 };
 </script>
@@ -97,18 +98,33 @@ const onGenerateImage = async () => {
           data-testid="image-prompt-input"
           :disabled="disabled"
           :value="slide.image?.prompt ?? ''"
-          @update:modelValue="(value?: string) => setImagePrompt(value)"
+          @update:modelValue="(value: string) => setImagePrompt(value, slide.image?.negative)"
         />
         <label for="text-input">Image Prompt</label>
       </span>
+      <span class="p-float-label">
+        <Textarea
+          id="image-negative-input"
+          data-testid="image-negative-input"
+          :disabled="disabled"
+          :value="slide.image?.negative ?? ''"
+          @update:modelValue="(value: string) => setImagePrompt(slide.image?.prompt ?? '', value)"
+        />
+        <label for="text-input">Image Negative Prompt</label>
+      </span>
       <ActionBar>
-        <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestPrompt" />
+        <SuggestButton
+          :disabled="disabled"
+          :loading="isBusy"
+          :initial-prompt="slide.text?.text"
+          @suggest="onSuggestPrompt"
+        />
       </ActionBar>
 
       <ImageDrop :disabled="disabled" @uploaded="(image: string) => setImage(image)" :preview-image="imagePreview" />
 
       <ActionBar>
-        <SuggestButton
+        <Button
           :disabled="disabled || !slide.image?.prompt"
           :loading="isBusy"
           @click="onGenerateImage"
