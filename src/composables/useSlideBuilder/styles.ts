@@ -440,7 +440,7 @@ function inject(template: string, prompt: string): string {
   return template.replace('{prompt}', prompt);
 }
 
-type StyledPrompt = Omit<Style, 'name'>;
+export type StyledPrompt = Omit<Style, 'name'>;
 export function applyStyle(style: Style, prompt: string): StyledPrompt {
   const positive = inject(style.positivePrompt, prompt);
   const negative = inject(style.negativePrompt, prompt);

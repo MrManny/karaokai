@@ -7,7 +7,6 @@ export const slideSchema = z.object({
     .object({
       text: z.string().trim(),
       prompt: promptSchema.default(''),
-      negative: promptSchema.optional(),
     })
     .optional(),
 
@@ -15,6 +14,7 @@ export const slideSchema = z.object({
     .object({
       base64: z.string().regex(/^data:image\/(png|jpeg|webp|gif);base64,[^ ]+$/),
       prompt: promptSchema.default(''),
+      negative: promptSchema.optional(),
     })
     .optional(),
 });

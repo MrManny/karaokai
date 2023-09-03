@@ -3,6 +3,7 @@ import { useOpenAi } from '../useOpenAi';
 import { fallbackPrompt, instructions, topic } from './prompts';
 import { useStabilityAi } from '../useStabilityAi/useStabilityAi';
 import { applyStyle, styles } from './styles';
+import type { StyledPrompt } from './styles';
 
 const TrailingPunctExpr = /\.\s*$/;
 
@@ -60,7 +61,7 @@ export function useSlideBuilder() {
     return await ask(messages).then((m) => cleanUp(m.content));
   }
 
-  async function findImagePrompts(text: string): Promise<string> {
+  async function findImagePrompts(text: string): Promise<StyledPrompt> {
     const messages: Message[] = [
       {
         role: 'system',
@@ -71,13 +72,14 @@ export function useSlideBuilder() {
     ];
     const { content: keywords } = await ask(messages);
     const [style] = pick(styles);
-    // TODO: support for negative prompts, which will come later
-    const { positivePrompt } = applyStyle(style, keywords);
-    return positivePrompt;
+    return applyStyle(style, keywords);
   }
 
-  async function generateImage(prompt: string): Promise<string> {
-    return await text2image(prompt);
+  async function generateImage(positivePrompt: string, negativePrompt?: string): Promise<string> {
+    return await text2image({
+      positivePrompt,
+      negativePrompt: negativePrompt ?? '',
+    });
   }
 
   return {

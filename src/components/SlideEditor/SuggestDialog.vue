@@ -3,13 +3,12 @@ import Textarea from 'primevue/textarea';
 import Dialog from 'primevue/dialog';
 import ActionBar from '../ActionBar/ActionBar.vue';
 import Button from 'primevue/button';
-import type { PropType } from 'vue';
 import { ref } from 'vue';
 
 const props = defineProps({
-  examples: {
-    type: Array as PropType<string[]>,
-    default: () => [],
+  withNegative: {
+    type: Boolean,
+    default: false,
   },
   guidance: {
     type: String,
@@ -24,6 +23,10 @@ const props = defineProps({
     type: String,
     default: () => '',
   },
+  initialNegative: {
+    type: String,
+    default: () => '',
+  },
   isDialogVisible: {
     type: Boolean,
     default: false,
@@ -31,6 +34,7 @@ const props = defineProps({
 });
 
 const prompt = ref<string>(props.initialPrompt);
+const negative = ref<string | undefined>(props.initialNegative);
 const emit = defineEmits(['close', 'suggest']);
 
 const onCancel = () => {
@@ -38,7 +42,8 @@ const onCancel = () => {
 };
 
 const onAccept = () => {
-  emit('suggest', prompt.value);
+  const negativeValue = props.withNegative ? negative.value : undefined;
+  emit('suggest', prompt.value, negativeValue);
 };
 </script>
 
@@ -49,14 +54,7 @@ const onAccept = () => {
     </p>
     <Textarea data-testid="prompt-input" class="bigger" v-model.trim="prompt" />
 
-    <div v-if="examples.length">
-      <p>Examples:</p>
-      <ul>
-        <li v-for="example of examples" data-testid="example" :key="example">
-          {{ example }}
-        </li>
-      </ul>
-    </div>
+    <Textarea v-if="withNegative" data-testid="negative-input" class="bigger" v-model.trim="negative"></Textarea>
 
     <template #footer>
       <ActionBar>

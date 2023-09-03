@@ -8,7 +8,7 @@ const getCancelButton = (): HTMLButtonElement => screen.queryByTestId('cancel-bu
 const getAcceptButton = (): HTMLButtonElement => screen.queryByTestId('accept-button');
 const getGuidance = () => screen.queryByTestId('guidance');
 const getPromptInput = (): HTMLTextAreaElement => screen.queryByTestId('prompt-input');
-const getExamples = () => screen.queryAllByTestId('example');
+const getNegativeInput = (): HTMLTextAreaElement => screen.queryByTestId('negative-input');
 const sleepOneTick = () => new Promise<void>((resolve) => nextTick(() => resolve()));
 
 const renderVisibleDialog = async (props: Record<string, unknown> = {}) => {
@@ -27,15 +27,6 @@ describe('SuggestDialog', () => {
     await renderVisibleDialog({ initialPrompt: 'this be test' });
 
     expect(getPromptInput().value).toEqual('this be test');
-  });
-
-  it('can list examples', async () => {
-    await renderVisibleDialog({ examples: ['This is an example', 'So is this'] });
-
-    const examples = getExamples();
-    expect(examples).toHaveLength(2);
-    expect(examples[0].textContent).toEqual('This is an example');
-    expect(examples[1].textContent).toEqual('So is this');
   });
 
   it('can provide guidance', async () => {
@@ -60,6 +51,14 @@ describe('SuggestDialog', () => {
     expect(getPromptInput().value).toEqual('I am a prompt');
   });
 
+  it('allows opt-in negative input', async () => {
+    await renderVisibleDialog({ withNegative: true });
+
+    await fireEvent.update(getNegativeInput(), 'I am a negative');
+
+    expect(getNegativeInput().value).toEqual('I am a negative');
+  });
+
   it('has a cancel button', async () => {
     const { emitted } = await renderVisibleDialog();
 
@@ -76,6 +75,16 @@ describe('SuggestDialog', () => {
     await fireEvent.click(getAcceptButton());
 
     expect(emitted('close')).toBeUndefined();
-    expect(emitted('suggest')).toEqual([['Yaaay']]);
+    expect(emitted('suggest')).toEqual([['Yaaay', undefined]]);
+  });
+
+  it('has an accept button that also relays negatives', async () => {
+    const { emitted } = await renderVisibleDialog({ withNegative: true });
+
+    await fireEvent.update(getPromptInput(), 'Yaaay');
+    await fireEvent.update(getNegativeInput(), 'Naaay');
+    await fireEvent.click(getAcceptButton());
+
+    expect(emitted('suggest')).toEqual([['Yaaay', 'Naaay']]);
   });
 });

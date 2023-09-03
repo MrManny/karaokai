@@ -5,6 +5,10 @@ import type { PropType } from 'vue';
 import SuggestDialog from './SuggestDialog.vue';
 
 defineProps({
+  withNegative: {
+    type: Boolean,
+    default: false,
+  },
   disabled: {
     type: Boolean,
     default: false,
@@ -30,12 +34,16 @@ defineProps({
     type: String,
     default: () => '',
   },
+  initialNegative: {
+    type: String,
+    default: () => '',
+  },
 });
 const emit = defineEmits(['suggest']);
 const isDialogVisible = ref<boolean>(false);
 
-const onAccept = (prompt: string) => {
-  emit('suggest', prompt);
+const onAccept = (prompt: string, negative?: string) => {
+  emit('suggest', prompt, negative);
   isDialogVisible.value = false;
 };
 const onCancel = () => {
@@ -54,6 +62,8 @@ const onCancel = () => {
   />
   <SuggestDialog
     :initial-prompt="initialPrompt"
+    :initial-negative="initialNegative"
+    :with-negative="withNegative"
     :examples="examples"
     :guidance="guidance"
     :label="label"

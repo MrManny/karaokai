@@ -23,9 +23,13 @@ const { isBusy, op } = useBusy();
 const { findTopic } = useSlideBuilder();
 const presentation = usePresentation();
 const activeSlideIndex = ref<number>(-1);
-const activeSlide = computed<Slide | undefined>(() =>
-  activeSlideIndex.value !== -1 ? presentation.slides[activeSlideIndex.value] : undefined
-);
+const activeSlide = computed<Slide | undefined>({
+  get: () => (activeSlideIndex.value !== -1 ? presentation.slides[activeSlideIndex.value] : undefined),
+  set: (value) => {
+    if (value === undefined) return;
+    presentation.replace(activeSlideIndex.value, value);
+  },
+});
 const canGoNext = computed(() => activeSlideIndex.value < presentation.slideCount && !!presentation.slideCount);
 const canGoPrev = computed(() => activeSlideIndex.value > 0 && presentation.slideCount);
 
@@ -70,7 +74,7 @@ const insertEmptySlide = (at: number = presentation.slideCount) => {
 };
 
 const updateSlide = (at: number, newSlide: Slide) => {
-  presentation.replace(at, newSlide);
+  activeSlide.value = newSlide;
 };
 
 const playPresentation = () => {

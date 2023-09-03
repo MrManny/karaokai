@@ -6,10 +6,21 @@ import { responseSchema } from '../stabilityai-schema';
 import { retry } from './retry';
 import { inspect } from 'util';
 
-ipcMain.handle(StableDiffusionXL.Generate, async (_, prompt: string) => {
-  const token = getCredential('stabilityai');
-  if (!token) throw new Error(`Token not set`);
+type WeightedPrompt = { text: string; weight: number };
+function toWeightedPrompts({ positivePrompt, negativePrompt }: Prompt): WeightedPrompt[] {
+  const textPrompts: WeightedPrompt[] = [];
+  if (positivePrompt) textPrompts.push({ text: positivePrompt, weight: 1 });
+  if (negativePrompt) textPrompts.push({ text: negativePrompt, weight: -1 });
+  return textPrompts;
+}
 
+type Prompt = { positivePrompt: string; negativePrompt: string };
+ipcMain.handle(StableDiffusionXL.Generate, async (_, prompt: Prompt) => {
+  const token = getCredential('stabilityai');
+  if (!token) throw new Error('Token not set');
+
+  const prompts = toWeightedPrompts(prompt);
+  if (!prompts.length) throw new Error('No prompts set');
   const requestBody = {
     height: 832,
     width: 1216,
@@ -17,7 +28,7 @@ ipcMain.handle(StableDiffusionXL.Generate, async (_, prompt: string) => {
     sampler: 'K_EULER_ANCESTRAL',
     samples: 1,
     steps: 50,
-    text_prompts: [{ text: prompt, weight: 1 }],
+    text_prompts: prompts,
   };
 
   const get = async () => {

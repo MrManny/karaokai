@@ -8,7 +8,11 @@ export default defineConfig({
       all: true,
       provider: 'istanbul', // not constantinople
       reporter: ['text', 'json-summary', 'json'],
+      reportOnFailure: true,
       include: ['src/**/*.ts', 'src/**/*.vue'],
+
+      lines: 60,
+      branches: 60,
     },
     environment: 'jsdom',
   },
