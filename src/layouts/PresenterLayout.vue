@@ -4,6 +4,7 @@ import { usePresentation } from '../stores/presentation';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { RouteNames } from '../routes';
+import { useKeyDown } from '../composables/useKeyDown';
 
 const { push } = useRouter();
 const presentation = usePresentation();
@@ -14,19 +15,27 @@ const end = () => {
   void push({ name: RouteNames.Main });
 };
 
-const handleExit = (ev: KeyboardEvent) => {
-  if (ev.key !== 'Escape') return;
-  console.debug('Ending presentation');
-  ev.preventDefault();
-
-  end();
+const goForward = () => {
+  if (activeSlideIndex.value >= presentation.slideCount) return;
+  activeSlideIndex.value++;
 };
+
+const goBackward = () => {
+  if (activeSlideIndex.value <= 0) return;
+  activeSlideIndex.value--;
+};
+
+useKeyDown([
+  { key: 'Escape', then: end },
+  { key: 'ArrowLeft', then: goBackward },
+  { key: 'ArrowRight', then: goForward },
+]);
 </script>
 
 <template>
   <main data-testid="presentation">
     <Transition>
-      <SlideViewer :key="activeSlideIndex" :slide="activeSlide ?? {}" @keydown="handleExit" />
+      <SlideViewer :key="activeSlideIndex" :slide="activeSlide ?? {}" />
     </Transition>
   </main>
 </template>
