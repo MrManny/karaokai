@@ -21,6 +21,12 @@ To access the bleeding edge development version, ensure that you have NodeJS ins
 
 t.b.d.
 
+## Roadmap
+
+You can find a high-level roadmap for things planned to happen soon in one (or both) of the following places:
+  - [ROADMAP.md](ROADMAP.md), and
+  - the [Project](https://github.com/users/MrManny/projects/2) site on GitHub when opened to the public.
+
 ## Contributing
 
 Pull requests are welcome. For feature changes, please open an issue first to discuss what you would like to change.
