@@ -3,18 +3,18 @@
 When contributing to this repository, please first discuss the change you wish to make via issue,
 email, or any other method with the owners of this repository before making a change.
 
-Please note we have a code of conduct, please follow it in all your interactions with the project.
+Please note that we have a code of conduct. Please follow it in all your interactions with the project.
 
 ## Pull Request Process
 
-1. Ensure any install or build dependencies are removed before the end of the layer when doing a
-   build.
-2. Update the README.md with details of changes to the interface, this includes new environment
-   variables, exposed ports, useful file locations and container parameters.
-3. Ensure that you have generated a changeset for your changes.
+1. Ensure that the builds still succeed with sufficient code coverage.
+2. Avoid introducing new dependencies unless absolutely necessary.
+   Double-check that the dependency is older than three days and does not show any known vulnerabilities on Snyk.
+3. Update the README.md with details of changes to the interface.
+4. Ensure that you have generated a changeset for your changes.
    You can do so with the command `npm run changeset`.
-4. You may merge the Pull Request once you have the sign-off of another developer, or if you
-   do not have permission to do that, you may request a reviewer to merge it for you.
+5. You may merge the Pull Request once you have the sign-off of another developer.
+   If you do not have permission to do that, you may request a reviewer to merge it for you.
 
 ## Code of Conduct
 
