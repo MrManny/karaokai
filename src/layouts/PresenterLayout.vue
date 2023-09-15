@@ -4,7 +4,7 @@ import { usePresentation } from '../stores/presentation';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { RouteNames } from '../routes';
-import { useKeyDown } from '../composables/useKeyDown';
+import { useKeyDown, WellKnownKeys } from '../composables/useKeyDown';
 
 const { push } = useRouter();
 const presentation = usePresentation();
@@ -26,9 +26,9 @@ const goBackward = () => {
 };
 
 useKeyDown([
-  { key: 'Escape', then: end },
-  { key: 'ArrowLeft', then: goBackward },
-  { key: 'ArrowRight', then: goForward },
+  { key: WellKnownKeys.Escape, then: end },
+  { key: WellKnownKeys.ArrowLeft, then: goBackward },
+  { key: WellKnownKeys.ArrowRight, then: goForward },
 ]);
 </script>
 

@@ -10,6 +10,7 @@ import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import SuggestButton from './SuggestButton.vue';
 import { topic } from '../../composables/useSlideBuilder/prompts';
+import { WellKnownKeys } from '../../composables/useKeyDown';
 
 const emit = defineEmits(['play']);
 const props = defineProps({
@@ -55,11 +56,11 @@ const suggestTopic = async (prompt: string) => {
 
 const moveThroughSlides = (ev: KeyboardEvent) => {
   switch (ev.key) {
-    case 'ArrowLeft':
+    case WellKnownKeys.ArrowLeft:
       ev.preventDefault();
       goToPrevious();
       break;
-    case 'ArrowRight':
+    case WellKnownKeys.ArrowRight:
       ev.preventDefault();
       goToNext();
       break;

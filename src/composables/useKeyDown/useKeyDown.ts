@@ -1,5 +1,11 @@
 import { onBeforeUnmount } from 'vue';
 
+export const enum WellKnownKeys {
+  ArrowLeft = 'ArrowLeft',
+  ArrowRight = 'ArrowRight',
+  Escape = 'Escape',
+}
+
 type KeyboardAction = {
   key: string;
   then: (ev: KeyboardEvent) => void;
