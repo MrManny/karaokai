@@ -1,16 +1,13 @@
 <script setup lang="ts">
-import { useBusy } from '../../composables/useBusy';
-import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
 import type { Slide } from '../../types/slide-schema';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
-import SuggestButton from './SuggestButton.vue';
 import { topic } from '../../composables/useSlideBuilder/prompts';
 import { WellKnownKeys } from '../../composables/useKeyDown';
 import { usePresenter } from '../../composables/usePresenter';
+import TopicInput from './TopicInput.vue';
 
 const emit = defineEmits(['play']);
 const props = defineProps({
@@ -20,16 +17,8 @@ const props = defineProps({
   },
 });
 
-const { isBusy, op } = useBusy();
-const { findTopic } = useSlideBuilder();
 const presentation = usePresentation();
 const { activeSlideIndex, activeSlide, canGoBack, canGoForward, goBack, goForward } = usePresenter();
-
-const suggestTopic = async (prompt: string) => {
-  await op(async () => {
-    presentation.topic = await findTopic(prompt);
-  });
-};
 
 const moveThroughSlides = (ev: KeyboardEvent) => {
   switch (ev.key) {
@@ -64,17 +53,12 @@ const playPresentation = () => {
 <template>
   <div class="editor" data-testid="editor">
     <div class="topic">
-      <div class="p-inputgroup">
-        <InputText
-          aria-labelledby="topic"
-          data-testid="topic-input"
-          placeholder="Topic"
-          required
-          v-model.trim="presentation.topic"
-          :disabled="isBusy"
-        />
-        <SuggestButton :loading="isBusy" :initial-prompt="topic.prompt" @suggest="suggestTopic" />
-      </div>
+      <TopicInput
+        :topic="presentation.topic"
+        :disabled="disabled"
+        :topic-prompt="topic.prompt"
+        @update:topic="(newTopic: string) => (presentation.topic = newTopic)"
+      />
     </div>
 
     <div class="preview" v-if="activeSlide">
