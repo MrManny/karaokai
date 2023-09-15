@@ -4,16 +4,16 @@ import Dialog from 'primevue/dialog';
 import ActionBar from '../ActionBar/ActionBar.vue';
 import Button from 'primevue/button';
 import { ref } from 'vue';
+import StackedLayout from '../../layouts/StackedLayout.vue';
 
 const props = defineProps({
-  withNegative: {
+  canAutomate: {
     type: Boolean,
     default: false,
   },
-  guidance: {
-    type: String,
-    default: '',
-    required: false,
+  withNegative: {
+    type: Boolean,
+    default: false,
   },
   label: {
     type: String,
@@ -35,10 +35,15 @@ const props = defineProps({
 
 const prompt = ref<string>(props.initialPrompt);
 const negative = ref<string | undefined>(props.initialNegative);
-const emit = defineEmits(['close', 'suggest']);
+const emit = defineEmits(['close', 'suggest', 'automate']);
 
 const onCancel = () => {
   emit('close');
+};
+
+const onAutomate = () => {
+  if (!props.canAutomate) return;
+  emit('automate');
 };
 
 const onAccept = () => {
@@ -49,12 +54,21 @@ const onAccept = () => {
 
 <template>
   <Dialog :visible="isDialogVisible" @hide="onCancel" header="Suggest" modal>
-    <p v-if="guidance" data-testid="guidance">
-      {{ guidance }}
-    </p>
-    <Textarea data-testid="prompt-input" class="bigger" v-model.trim="prompt" />
+    <StackedLayout>
+      <slot name="guidance" />
 
-    <Textarea v-if="withNegative" data-testid="negative-input" class="bigger" v-model.trim="negative"></Textarea>
+      <Button v-if="canAutomate" label="Automate" @click="onAutomate" />
+
+      <Textarea data-testid="prompt-input" class="bigger" v-model.trim="prompt" placeholder="Prompt" required />
+
+      <Textarea
+        v-if="withNegative"
+        data-testid="negative-input"
+        class="bigger"
+        placeholder="Negative prompt"
+        v-model.trim="negative"
+      />
+    </StackedLayout>
 
     <template #footer>
       <ActionBar>

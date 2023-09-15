@@ -28,12 +28,6 @@ import { RouteNames } from '../routes';
   margin: 16px;
 }
 
-main {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 .top {
   background-color: var(--surface-b);
   display: flex;

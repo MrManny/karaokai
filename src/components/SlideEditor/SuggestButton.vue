@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
 import { ref } from 'vue';
-import type { PropType } from 'vue';
 import SuggestDialog from './SuggestDialog.vue';
 
 defineProps({
+  canAutomate: {
+    type: Boolean,
+    default: false,
+  },
   withNegative: {
     type: Boolean,
     default: false,
@@ -12,15 +15,6 @@ defineProps({
   disabled: {
     type: Boolean,
     default: false,
-  },
-  examples: {
-    type: Array as PropType<string[]>,
-    default: () => [],
-  },
-  guidance: {
-    type: String,
-    default: '',
-    required: false,
   },
   label: {
     type: String,
@@ -39,7 +33,7 @@ defineProps({
     default: () => '',
   },
 });
-const emit = defineEmits(['suggest']);
+const emit = defineEmits(['suggest', 'automate']);
 const isDialogVisible = ref<boolean>(false);
 
 const onAccept = (prompt: string, negative?: string) => {
@@ -47,6 +41,11 @@ const onAccept = (prompt: string, negative?: string) => {
   isDialogVisible.value = false;
 };
 const onCancel = () => {
+  isDialogVisible.value = false;
+};
+
+const onAutomate = () => {
+  emit('automate');
   isDialogVisible.value = false;
 };
 </script>
@@ -61,25 +60,18 @@ const onCancel = () => {
     icon="pi pi-search"
   />
   <SuggestDialog
+    :can-automate="canAutomate"
     :initial-prompt="initialPrompt"
     :initial-negative="initialNegative"
     :with-negative="withNegative"
-    :examples="examples"
-    :guidance="guidance"
     :label="label"
     :is-dialog-visible="isDialogVisible"
     @close="onCancel"
     @suggest="onAccept"
-  />
+    @automate="onAutomate"
+  >
+    <template #guidance>
+      <slot name="guidance" />
+    </template>
+  </SuggestDialog>
 </template>
-
-<style scoped>
-.bigger {
-  min-width: 60vw;
-}
-
-textarea {
-  resize: vertical;
-  width: 100%;
-}
-</style>

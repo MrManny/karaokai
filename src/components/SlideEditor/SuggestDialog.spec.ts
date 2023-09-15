@@ -6,7 +6,6 @@ import { nextTick } from 'vue';
 
 const getCancelButton = (): HTMLButtonElement => screen.queryByTestId('cancel-button');
 const getAcceptButton = (): HTMLButtonElement => screen.queryByTestId('accept-button');
-const getGuidance = () => screen.queryByTestId('guidance');
 const getPromptInput = (): HTMLTextAreaElement => screen.queryByTestId('prompt-input');
 const getNegativeInput = (): HTMLTextAreaElement => screen.queryByTestId('negative-input');
 const sleepOneTick = () => new Promise<void>((resolve) => nextTick(() => resolve()));
@@ -27,12 +26,6 @@ describe('SuggestDialog', () => {
     await renderVisibleDialog({ initialPrompt: 'this be test' });
 
     expect(getPromptInput().value).toEqual('this be test');
-  });
-
-  it('can provide guidance', async () => {
-    await renderVisibleDialog({ guidance: 'Let me guide you, youngling' });
-
-    expect(getGuidance().textContent).toEqual('Let me guide you, youngling');
   });
 
   it('allows text input', async () => {

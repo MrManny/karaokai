@@ -13,7 +13,6 @@ vi.mock('../../composables/useSlideBuilder', () => ({
 
 const getTopic = () => screen.getByTestId('topic');
 const getTextInput = () => screen.getByTestId('text-input');
-const getImagePromptInput = () => screen.getByTestId('image-prompt-input');
 const getImageDropZone = () => screen.getByTestId('image-drop');
 
 describe('SlideControls', () => {
@@ -30,7 +29,6 @@ describe('SlideControls', () => {
 
     // assert
     expect(getTextInput().getAttribute('disabled')).toBeDefined();
-    expect(getImagePromptInput().getAttribute('disabled')).toBeDefined();
   });
 
   it('displays a slide', () => {
@@ -48,12 +46,10 @@ describe('SlideControls', () => {
       },
     });
     const textInput = getTextInput();
-    const imagePromptInput = getImagePromptInput();
     const image = getImageDropZone();
 
     // assert
     expect(textInput).toHaveProperty('value', 'My text');
-    expect(imagePromptInput).toHaveProperty('value', 'A test image');
     expect(image.style['background-image']).toMatch(/data:image\/png;base64,test/);
   });
 
@@ -79,33 +75,5 @@ describe('SlideControls', () => {
     fireEvent.update(getTextInput(), 'Another topic!');
 
     expect(emitted()['update:slide']).toEqual([[{ text: { text: 'Another topic!', prompt: '' } }]]);
-  });
-
-  it('emits an event when the slide image prompt changed', () => {
-    const { emitted } = renderComponent(SlideControls, {
-      topic: 'My awesome topic',
-      slide: {
-        text: {
-          text: 'Lorem ipsum',
-          prompt: '',
-        },
-      },
-    });
-
-    fireEvent.update(getImagePromptInput(), 'Another drawing!');
-
-    expect(emitted()['update:slide']).toEqual([
-      [
-        {
-          image: {
-            prompt: 'Another drawing!',
-          },
-          text: {
-            prompt: '',
-            text: 'Lorem ipsum',
-          },
-        },
-      ],
-    ]);
   });
 });
