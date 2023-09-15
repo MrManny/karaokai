@@ -5,12 +5,12 @@ import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import type { Slide } from '../../types/slide-schema';
-import { computed, onMounted, ref } from 'vue';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import SuggestButton from './SuggestButton.vue';
 import { topic } from '../../composables/useSlideBuilder/prompts';
 import { WellKnownKeys } from '../../composables/useKeyDown';
+import { usePresenter } from '../../composables/usePresenter';
 
 const emit = defineEmits(['play']);
 const props = defineProps({
@@ -23,30 +23,7 @@ const props = defineProps({
 const { isBusy, op } = useBusy();
 const { findTopic } = useSlideBuilder();
 const presentation = usePresentation();
-const activeSlideIndex = ref<number>(-1);
-const activeSlide = computed<Slide | undefined>({
-  get: () => (activeSlideIndex.value !== -1 ? presentation.slides[activeSlideIndex.value] : undefined),
-  set: (value) => {
-    if (value === undefined) return;
-    presentation.replace(activeSlideIndex.value, value);
-  },
-});
-const canGoNext = computed(() => activeSlideIndex.value < presentation.slideCount && !!presentation.slideCount);
-const canGoPrev = computed(() => activeSlideIndex.value > 0 && presentation.slideCount);
-
-onMounted(() => {
-  if (presentation.slideCount) activeSlideIndex.value = 0;
-});
-
-const goToPrevious = () => {
-  if (!canGoPrev.value) return;
-  activeSlideIndex.value--;
-};
-
-const goToNext = () => {
-  if (!canGoNext.value) return;
-  activeSlideIndex.value++;
-};
+const { activeSlideIndex, activeSlide, canGoBack, canGoForward, goBack, goForward } = usePresenter();
 
 const suggestTopic = async (prompt: string) => {
   await op(async () => {
@@ -58,11 +35,11 @@ const moveThroughSlides = (ev: KeyboardEvent) => {
   switch (ev.key) {
     case WellKnownKeys.ArrowLeft:
       ev.preventDefault();
-      goToPrevious();
+      goBack();
       break;
     case WellKnownKeys.ArrowRight:
       ev.preventDefault();
-      goToNext();
+      goForward();
       break;
   }
 };
@@ -75,7 +52,7 @@ const insertEmptySlide = (at: number = presentation.slideCount) => {
 };
 
 const updateSlide = (at: number, newSlide: Slide) => {
-  activeSlide.value = newSlide;
+  presentation.replace(at, newSlide);
 };
 
 const playPresentation = () => {
@@ -114,9 +91,9 @@ const playPresentation = () => {
 
     <div class="slide-deck" @keydown="(ev) => moveThroughSlides(ev)">
       <Button
-        :disabled="!canGoPrev"
+        :disabled="!canGoBack"
         label="Previous"
-        @click="goToPrevious"
+        @click="goBack"
         class="nav"
         icon="pi pi-arrow-left"
         icon-pos="left"
@@ -136,9 +113,9 @@ const playPresentation = () => {
       <Button label="New" @click="() => insertEmptySlide()" class="nav" icon="pi pi-plus" />
 
       <Button
-        :disabled="!canGoNext"
+        :disabled="!canGoForward"
         label="Next"
-        @click="goToNext"
+        @click="goForward"
         class="nav"
         icon="pi pi-arrow-right"
         icon-pos="right"
