@@ -1,15 +1,13 @@
 <script setup lang="ts">
-import { useBusy } from '../../composables/useBusy';
-import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
 import type { Slide } from '../../types/slide-schema';
-import { computed, onMounted, ref } from 'vue';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
-import SuggestButton from './SuggestButton.vue';
 import { topic } from '../../composables/useSlideBuilder/prompts';
+import { WellKnownKeys } from '../../composables/useKeyDown';
+import { usePresenter } from '../../composables/usePresenter';
+import TopicInput from './TopicInput.vue';
 
 const emit = defineEmits(['play']);
 const props = defineProps({
@@ -19,49 +17,18 @@ const props = defineProps({
   },
 });
 
-const { isBusy, op } = useBusy();
-const { findTopic } = useSlideBuilder();
 const presentation = usePresentation();
-const activeSlideIndex = ref<number>(-1);
-const activeSlide = computed<Slide | undefined>({
-  get: () => (activeSlideIndex.value !== -1 ? presentation.slides[activeSlideIndex.value] : undefined),
-  set: (value) => {
-    if (value === undefined) return;
-    presentation.replace(activeSlideIndex.value, value);
-  },
-});
-const canGoNext = computed(() => activeSlideIndex.value < presentation.slideCount && !!presentation.slideCount);
-const canGoPrev = computed(() => activeSlideIndex.value > 0 && presentation.slideCount);
-
-onMounted(() => {
-  if (presentation.slideCount) activeSlideIndex.value = 0;
-});
-
-const goToPrevious = () => {
-  if (!canGoPrev.value) return;
-  activeSlideIndex.value--;
-};
-
-const goToNext = () => {
-  if (!canGoNext.value) return;
-  activeSlideIndex.value++;
-};
-
-const suggestTopic = async (prompt: string) => {
-  await op(async () => {
-    presentation.topic = await findTopic(prompt);
-  });
-};
+const { activeSlideIndex, activeSlide, canGoBack, canGoForward, goBack, goForward } = usePresenter();
 
 const moveThroughSlides = (ev: KeyboardEvent) => {
   switch (ev.key) {
-    case 'ArrowLeft':
+    case WellKnownKeys.ArrowLeft:
       ev.preventDefault();
-      goToPrevious();
+      goBack();
       break;
-    case 'ArrowRight':
+    case WellKnownKeys.ArrowRight:
       ev.preventDefault();
-      goToNext();
+      goForward();
       break;
   }
 };
@@ -74,7 +41,7 @@ const insertEmptySlide = (at: number = presentation.slideCount) => {
 };
 
 const updateSlide = (at: number, newSlide: Slide) => {
-  activeSlide.value = newSlide;
+  presentation.replace(at, newSlide);
 };
 
 const playPresentation = () => {
@@ -86,17 +53,12 @@ const playPresentation = () => {
 <template>
   <div class="editor" data-testid="editor">
     <div class="topic">
-      <div class="p-inputgroup">
-        <InputText
-          aria-labelledby="topic"
-          data-testid="topic-input"
-          placeholder="Topic"
-          required
-          v-model.trim="presentation.topic"
-          :disabled="isBusy"
-        />
-        <SuggestButton :loading="isBusy" :initial-prompt="topic.prompt" @suggest="suggestTopic" />
-      </div>
+      <TopicInput
+        :topic="presentation.topic"
+        :disabled="disabled"
+        :topic-prompt="topic.prompt"
+        @update:topic="(newTopic: string) => (presentation.topic = newTopic)"
+      />
     </div>
 
     <div class="preview" v-if="activeSlide">
@@ -113,9 +75,9 @@ const playPresentation = () => {
 
     <div class="slide-deck" @keydown="(ev) => moveThroughSlides(ev)">
       <Button
-        :disabled="!canGoPrev"
+        :disabled="!canGoBack"
         label="Previous"
-        @click="goToPrevious"
+        @click="goBack"
         class="nav"
         icon="pi pi-arrow-left"
         icon-pos="left"
@@ -135,9 +97,9 @@ const playPresentation = () => {
       <Button label="New" @click="() => insertEmptySlide()" class="nav" icon="pi pi-plus" />
 
       <Button
-        :disabled="!canGoNext"
+        :disabled="!canGoForward"
         label="Next"
-        @click="goToNext"
+        @click="goForward"
         class="nav"
         icon="pi pi-arrow-right"
         icon-pos="right"

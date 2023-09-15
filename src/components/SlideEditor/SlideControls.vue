@@ -2,13 +2,13 @@
 import type { PropType } from 'vue';
 import type { Slide } from '../../types/slide-schema';
 import Textarea from 'primevue/textarea';
-import Button from 'primevue/button';
 import { useBusy } from '../../composables/useBusy';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import SuggestButton from './SuggestButton.vue';
 import ImageDrop from './ImageDrop.vue';
 import ActionBar from '../ActionBar/ActionBar.vue';
 import { computed } from 'vue';
+import StackedLayout from '../../layouts/StackedLayout.vue';
 
 const { isBusy, op } = useBusy();
 const { generateText, generateImage, findImagePrompts } = useSlideBuilder();
@@ -49,18 +49,20 @@ const onSuggestText = async () => {
   });
 };
 
-const onSuggestPrompt = async (input: string) => {
+const canSuggestImage = computed(() => !!props.slide.text && !!props.slide.text.text);
+
+const onSuggestImage = async () => {
+  if (!canSuggestImage.value) return;
   await op(async () => {
-    const { positivePrompt, negativePrompt } = await findImagePrompts(input);
+    const { positivePrompt, negativePrompt } = await findImagePrompts(props.slide.text?.text ?? '');
+    const image = await generateImage(positivePrompt, negativePrompt);
+    console.debug({ positivePrompt, negativePrompt });
     setImagePrompt(positivePrompt, negativePrompt);
+    setImage(`data:image/png;base64,${image}`);
   });
 };
 
-const onGenerateImage = async () => {
-  const positive = props.slide.image?.prompt;
-  if (!positive) return;
-
-  const negative = props.slide.image?.negative;
+const onGenerateImage = async (positive: string, negative?: string) => {
   await op(async () => {
     const image = await generateImage(positive, negative);
     setImage(`data:image/png;base64,${image}`);
@@ -69,79 +71,58 @@ const onGenerateImage = async () => {
 </script>
 
 <template>
-  <form class="stacked">
-    <div data-testid="topic" :data-topic="topic">
-      <div class="stacked">
-        <h2>Text</h2>
-        <span class="p-float-label">
+  <form>
+    <StackedLayout>
+      <div data-testid="topic" :data-topic="topic">
+        <div class="stacked">
+          <h2>Text</h2>
+          <p>Enter text for your slide.</p>
+
           <Textarea
             id="text-input"
             data-testid="text-input"
+            placeholder="Text"
             :disabled="disabled"
             :value="slide.text?.text ?? ''"
             @update:modelValue="(value?: string) => setText(value)"
           />
-          <label for="text-input">Text</label>
-        </span>
+
+          <ActionBar>
+            <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestText" />
+          </ActionBar>
+        </div>
+      </div>
+
+      <div class="stacked">
+        <h2>Image</h2>
+        <p>Set the background image for your slide.</p>
+
+        <ImageDrop :disabled="disabled" @uploaded="(image: string) => setImage(image)" :preview-image="imagePreview" />
+
+        <p>Alternatively, you can generate an image below.</p>
 
         <ActionBar>
-          <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestText" />
+          <SuggestButton
+            :disabled="disabled"
+            :loading="isBusy"
+            :initial-prompt="slide.image?.prompt"
+            :initial-negative="slide.image?.negative"
+            @automate="onSuggestImage"
+            @suggest="onGenerateImage"
+            :can-automate="canSuggestImage"
+            with-negative
+          >
+            <template #guidance>
+              <p>Use simple keywords that describe your image.</p>
+            </template>
+          </SuggestButton>
         </ActionBar>
       </div>
-    </div>
-
-    <div class="stacked">
-      <h2>Image</h2>
-      <span class="p-float-label">
-        <Textarea
-          id="image-prompt-input"
-          data-testid="image-prompt-input"
-          :disabled="disabled"
-          :value="slide.image?.prompt ?? ''"
-          @update:modelValue="(value: string) => setImagePrompt(value, slide.image?.negative)"
-        />
-        <label for="text-input">Image Prompt</label>
-      </span>
-      <span class="p-float-label">
-        <Textarea
-          id="image-negative-input"
-          data-testid="image-negative-input"
-          :disabled="disabled"
-          :value="slide.image?.negative ?? ''"
-          @update:modelValue="(value: string) => setImagePrompt(slide.image?.prompt ?? '', value)"
-        />
-        <label for="text-input">Image Negative Prompt</label>
-      </span>
-      <ActionBar>
-        <SuggestButton
-          :disabled="disabled"
-          :loading="isBusy"
-          :initial-prompt="slide.text?.text"
-          @suggest="onSuggestPrompt"
-        />
-      </ActionBar>
-
-      <ImageDrop :disabled="disabled" @uploaded="(image: string) => setImage(image)" :preview-image="imagePreview" />
-
-      <ActionBar>
-        <Button
-          :disabled="disabled || !slide.image?.prompt"
-          :loading="isBusy"
-          @click="onGenerateImage"
-          label="Make image"
-        />
-      </ActionBar>
-    </div>
+    </StackedLayout>
   </form>
 </template>
 
 <style scoped>
-.stacked {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
 textarea {
   resize: vertical;
   width: 100%;

@@ -4,6 +4,7 @@ import { usePresentation } from '../../stores/presentation';
 import { computed, unref } from 'vue';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
+import StackedLayout from '../../layouts/StackedLayout.vue';
 
 const emit = defineEmits(['saved']);
 const presentation = usePresentation();
@@ -26,20 +27,17 @@ const saver = () => {
 </script>
 
 <template>
-  <div class="dialog">
+  <StackedLayout class="dialog">
     <span class="p-float-label">
       <InputText id="text-input" data-testid="filename-input" v-model="fileName" />
       <label for="text-input">File name</label>
     </span>
     <Button @click="saver" label="Save" />
-  </div>
+  </StackedLayout>
 </template>
 
 <style scoped>
 .dialog {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   align-items: stretch;
 }
 </style>
