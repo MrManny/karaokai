@@ -16,6 +16,7 @@
     // not needed for vue 3
     "vue/no-multiple-template-root": "off",
     "vue/multi-word-component-names": "off",
-    "@typescript-eslint/consistent-type-imports": "error"
+    "@typescript-eslint/consistent-type-imports": "error",
+    "vue/no-v-model-argument": "off" // required by PrimeVue
   }
 }

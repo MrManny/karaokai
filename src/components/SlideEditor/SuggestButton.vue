@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import Button from 'primevue/button';
 import { ref } from 'vue';
-import SuggestDialog from './SuggestDialog.vue';
+import ActionBar from '../ActionBar/ActionBar.vue';
+import Textarea from 'primevue/textarea';
+import Dialog from 'primevue/dialog';
+import StackedLayout from '../../layouts/StackedLayout.vue';
 
-defineProps({
+const props = defineProps({
   canAutomate: {
     type: Boolean,
     default: false,
@@ -35,9 +38,11 @@ defineProps({
 });
 const emit = defineEmits(['suggest', 'automate']);
 const isDialogVisible = ref<boolean>(false);
+const prompt = ref<string>(props.initialPrompt);
+const negative = ref<string | undefined>(props.initialNegative);
 
-const onAccept = (prompt: string, negative?: string) => {
-  emit('suggest', prompt, negative);
+const onAccept = () => {
+  emit('suggest', prompt.value, negative.value);
   isDialogVisible.value = false;
 };
 const onCancel = () => {
@@ -59,19 +64,29 @@ const onAutomate = () => {
     @click="() => (isDialogVisible = true)"
     icon="pi pi-search"
   />
-  <SuggestDialog
-    :can-automate="canAutomate"
-    :initial-prompt="initialPrompt"
-    :initial-negative="initialNegative"
-    :with-negative="withNegative"
-    :label="label"
-    :is-dialog-visible="isDialogVisible"
-    @close="onCancel"
-    @suggest="onAccept"
-    @automate="onAutomate"
-  >
-    <template #guidance>
+
+  <Dialog v-model:visible="isDialogVisible" :header="label" modal>
+    <StackedLayout>
       <slot name="guidance" />
+
+      <Button v-if="canAutomate" label="Automate" data-testid="automate-button" @click="onAutomate" />
+
+      <Textarea data-testid="prompt-input" class="bigger" v-model.trim="prompt" placeholder="Prompt" required />
+
+      <Textarea
+        v-if="withNegative"
+        data-testid="negative-input"
+        class="bigger"
+        placeholder="Negative prompt"
+        v-model.trim="negative"
+      />
+    </StackedLayout>
+
+    <template #footer>
+      <ActionBar>
+        <Button data-testid="cancel-button" label="Cancel" @click="onCancel" />
+        <Button data-testid="accept-button" :label="label" severity="success" icon="pi pi-search" @click="onAccept" />
+      </ActionBar>
     </template>
-  </SuggestDialog>
+  </Dialog>
 </template>
