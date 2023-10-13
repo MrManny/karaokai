@@ -42,15 +42,17 @@ describe('useIo', () => {
   });
 
   it('can save data', () => {
+    window.URL.createObjectURL = vi.fn().mockReturnValue('data:text/plain;base64,test');
+    window.URL.revokeObjectURL = vi.fn();
+
     const presentation = { topic: 'Potassium in bananas', slides: [], meta: {} };
     const { save } = useIo();
     const appendSpy = vi.spyOn(document.body, 'append');
-    const createObjectUrlSpy = vi.spyOn(URL, 'createObjectURL').mockReturnValue('data:text/plain;base64,test');
     vi.spyOn(document, 'removeChild').mockImplementation((child) => child);
 
     save('test.json', presentation);
 
-    expect(createObjectUrlSpy).toHaveBeenCalled();
+    expect(window.URL.createObjectURL).toHaveBeenCalled();
     expect(appendSpy).toHaveBeenCalled();
   });
 });
