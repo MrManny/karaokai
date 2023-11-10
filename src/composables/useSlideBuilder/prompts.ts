@@ -6,6 +6,10 @@ export const topic = {
   summary: (str: string) => `The topic is "${str}".`,
 };
 
+export const drawImage = {
+  prompt: 'Generate a prompt for DALL-E for an image that goes well with this text.',
+};
+
 function suffix(num: number): string {
   const lastDigit = num % 10;
   const suffixFor1 = lastDigit === 1 && num !== 11;
