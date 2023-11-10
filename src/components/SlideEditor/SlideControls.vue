@@ -11,7 +11,7 @@ import { computed } from 'vue';
 import StackedLayout from '../../layouts/StackedLayout.vue';
 
 const { isBusy, op } = useBusy();
-const { generateText, generateImage, findImagePrompts } = useSlideBuilder();
+const { generateText, generateImage } = useSlideBuilder();
 
 const props = defineProps({
   disabled: {
@@ -39,7 +39,6 @@ const updatePartial = <T extends keyof Slide>(key: T, update: Partial<Slide[T]>)
 };
 
 const setText = (newText?: string) => updatePartial('text', { text: newText ?? '' });
-const setImagePrompt = (positive: string, negative?: string) => updatePartial('image', { prompt: positive, negative });
 const setImage = (image?: string) => updatePartial('image', { base64: image ?? '' });
 
 const onSuggestText = async () => {
@@ -54,17 +53,8 @@ const canSuggestImage = computed(() => !!props.slide.text && !!props.slide.text.
 const onSuggestImage = async () => {
   if (!canSuggestImage.value) return;
   await op(async () => {
-    const { positivePrompt, negativePrompt } = await findImagePrompts(props.slide.text?.text ?? '');
-    const image = await generateImage(positivePrompt, negativePrompt);
-    console.debug({ positivePrompt, negativePrompt });
-    setImagePrompt(positivePrompt, negativePrompt);
-    setImage(`data:image/png;base64,${image}`);
-  });
-};
-
-const onGenerateImage = async (positive: string, negative?: string) => {
-  await op(async () => {
-    const image = await generateImage(positive, negative);
+    const image = await generateImage(props.slide.text?.text ?? '');
+    console.debug('Image generated', { image });
     setImage(`data:image/png;base64,${image}`);
   });
 };
@@ -108,7 +98,6 @@ const onGenerateImage = async (positive: string, negative?: string) => {
             :initial-prompt="slide.image?.prompt"
             :initial-negative="slide.image?.negative"
             @automate="onSuggestImage"
-            @suggest="onGenerateImage"
             :can-automate="canSuggestImage"
             with-negative
           >
