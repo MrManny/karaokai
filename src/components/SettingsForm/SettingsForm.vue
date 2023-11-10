@@ -11,22 +11,15 @@ defineProps({
     type: Boolean,
     default: false,
   },
-  hasStabilityAiKey: {
-    type: Boolean,
-    default: false,
-  },
 });
 
-defineEmits(['update:openAiKey', 'update:stabilityAiKey', 'save']);
+defineEmits(['update:openAiKey', 'save']);
 </script>
 
 <template>
   <div class="form">
     <label for="openAiKey"> OpenAI token </label>
     <InputText id="openAiKey" @update:modelValue="(key) => $emit('update:openAiKey', key)" required />
-
-    <label for="stabilityAiKey"> StabilityAI token </label>
-    <InputText id="stabilityAiKey" @update:modelValue="(key) => $emit('update:stabilityAiKey', key)" required />
 
     <div class="actions">
       <Button :disabled="disabled" @click="$emit('save')" label="Save" />

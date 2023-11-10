@@ -6,5 +6,9 @@ export function useOpenAi() {
     return await ipcRenderer.invoke('chat', messages);
   };
 
-  return { ask };
+  const draw = async (prompt: string): Promise<string> => {
+    return await ipcRenderer.invoke('image', prompt);
+  }
+
+  return { ask, draw };
 }

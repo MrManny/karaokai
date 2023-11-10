@@ -1,15 +1,11 @@
 import type { Message } from '../useOpenAi';
 import { useOpenAi } from '../useOpenAi';
-import { fallbackPrompt, instructions, topic } from './prompts';
-import { useStabilityAi } from '../useStabilityAi/useStabilityAi';
-import { applyStyle, styles } from './styles';
-import type { StyledPrompt } from './styles';
+import { fallbackPrompt, drawImage, instructions, topic } from './prompts';
 
 const TrailingPunctExpr = /\.\s*$/;
 
 export function useSlideBuilder() {
-  const { ask } = useOpenAi();
-  const { text2image } = useStabilityAi();
+  const { ask, draw } = useOpenAi();
 
   function unquote(str: string): string {
     if (str.startsWith('"') && str.endsWith('"')) {
@@ -48,8 +44,8 @@ export function useSlideBuilder() {
     return picked;
   }
 
-  async function findTopic(prompt = topic.prompt): Promise<string> {
-    const messages = [...buildInitialHistory(), { role: 'user', content: prompt }];
+  async function findTopic(): Promise<string> {
+    const messages = [...buildInitialHistory(), { role: 'user', content: topic.prompt }];
     const answer = await ask(messages);
     return cleanUp(answer.content);
   }
@@ -61,29 +57,17 @@ export function useSlideBuilder() {
     return await ask(messages).then((m) => cleanUp(m.content));
   }
 
-  async function findImagePrompts(text: string): Promise<StyledPrompt> {
-    const messages: Message[] = [
-      {
-        role: 'system',
-        content:
-          'You generate three simple keywords. The first two keywords summarize the topic of the provided text. The last keyword is a random noun. Write down the keywords in a comma-separated list.',
-      },
-      { role: 'user', content: text },
+  async function generateImage(slideText: string): Promise<string> {
+    const messages = [
+        ...buildInitialHistory(),
+        { role: 'user', content: `The slide's text is: ${slideText}` },
+        { role: 'user', content: drawImage.prompt },
     ];
-    const { content: keywords } = await ask(messages);
-    const [style] = pick(styles);
-    return applyStyle(style, keywords);
-  }
-
-  async function generateImage(positivePrompt: string, negativePrompt?: string): Promise<string> {
-    return await text2image({
-      positivePrompt,
-      negativePrompt: negativePrompt ?? '',
-    });
+    const prompt = await ask(messages).then((m) => cleanUp(m.content));
+    return await draw(prompt);
   }
 
   return {
-    findImagePrompts,
     findTopic,
     generateText,
     generateImage,

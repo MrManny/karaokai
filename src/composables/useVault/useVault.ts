@@ -2,7 +2,6 @@ import { ipcRenderer } from 'electron';
 
 export const enum TokenName {
   OpenAi = 'openai',
-  StabilityAi = 'stabilityai',
 }
 
 export function useVault() {
