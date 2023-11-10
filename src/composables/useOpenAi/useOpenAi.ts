@@ -8,7 +8,7 @@ export function useOpenAi() {
 
   const draw = async (prompt: string): Promise<string> => {
     return await ipcRenderer.invoke('image', prompt);
-  }
+  };
 
   return { ask, draw };
 }

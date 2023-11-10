@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron';
 import { getCredential } from '../credentials-vault';
 import OpenAI from 'openai';
+import { ChatCompletionSnapshot } from 'openai/lib/ChatCompletionStream';
+import Message = ChatCompletionSnapshot.Choice.Message;
 
 function getTokenOrThrow(): string {
   const token = getCredential('openai');
@@ -13,7 +15,7 @@ function createClient(): OpenAI {
   return new OpenAI({ apiKey: token });
 }
 
-ipcMain.handle('chat', async (_, messages: any[]) => {
+ipcMain.handle('chat', async (_, messages: Message[]) => {
   const openai = createClient();
   const response = await openai.chat.completions.create({
     model: 'gpt-4',

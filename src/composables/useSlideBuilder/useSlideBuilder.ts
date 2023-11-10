@@ -31,19 +31,6 @@ export function useSlideBuilder() {
     ];
   }
 
-  function pick<T>(ary: T[], howMany = 1): T[] {
-    const pool: T[] = [...ary];
-    const picked: T[] = [];
-    for (let i = 0; i < howMany; i++) {
-      const len = pool.length;
-      const pickIndex = Math.floor(Math.random() * len);
-      const pick = pool[pickIndex];
-      picked.push(pick);
-      pool.splice(pickIndex, 1);
-    }
-    return picked;
-  }
-
   async function findTopic(): Promise<string> {
     const messages = [...buildInitialHistory(), { role: 'user', content: topic.prompt }];
     const answer = await ask(messages);
@@ -59,9 +46,9 @@ export function useSlideBuilder() {
 
   async function generateImage(slideText: string): Promise<string> {
     const messages = [
-        ...buildInitialHistory(),
-        { role: 'user', content: `The slide's text is: ${slideText}` },
-        { role: 'user', content: drawImage.prompt },
+      ...buildInitialHistory(),
+      { role: 'user', content: `The slide's text is: ${slideText}` },
+      { role: 'user', content: drawImage.prompt },
     ];
     const prompt = await ask(messages).then((m) => cleanUp(m.content));
     return await draw(prompt);
