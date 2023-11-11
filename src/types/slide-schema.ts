@@ -6,14 +6,14 @@ export const slideSchema = z.object({
   text: z
     .object({
       text: z.string().trim(),
-      prompt: promptSchema.default(''),
+      prompt: promptSchema.optional(),
     })
     .optional(),
 
   image: z
     .object({
       base64: z.string().regex(/^data:image\/(png|jpeg|webp|gif);base64,[^ ]+$/),
-      prompt: promptSchema.default(''),
+      prompt: promptSchema.optional(),
       negative: promptSchema.optional(),
     })
     .optional(),

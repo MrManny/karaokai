@@ -2,6 +2,7 @@
 import type { Slide } from '../../types/slide-schema';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
+import { ensureDataUri } from '../../utils/img-util';
 
 const props = defineProps({
   slide: {
@@ -10,9 +11,10 @@ const props = defineProps({
   },
 });
 
-const imageBackgroundStyle = computed(() => ({
-  'background-image': `url(${props.slide.image?.base64})`,
-}));
+const imageBackgroundStyle = computed(() => {
+  const dataUri = ensureDataUri(props.slide.image?.base64 ?? '', 'image/png');
+  return { 'background-image': `url(${dataUri})` };
+});
 </script>
 
 <template>

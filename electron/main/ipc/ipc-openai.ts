@@ -3,6 +3,7 @@ import { getCredential } from '../credentials-vault';
 import OpenAI from 'openai';
 import { ChatCompletionSnapshot } from 'openai/lib/ChatCompletionStream';
 import Message = ChatCompletionSnapshot.Choice.Message;
+import sharp from 'sharp';
 
 function getTokenOrThrow(): string {
   const token = getCredential('openai');
@@ -37,5 +38,10 @@ ipcMain.handle('image', async (_, prompt: string) => {
     response_format: 'b64_json',
   });
   const [image] = response.data;
-  return image.b64_json;
+  const pngImageBuffer = Buffer.from(image.b64_json ?? '', 'base64');
+  const webpImageBuffer = await sharp(pngImageBuffer)
+    .resize({ width: 1280, height: 720, fit: 'cover' })
+    .webp({ quality: 80 })
+    .toBuffer();
+  return webpImageBuffer.toString('base64');
 });

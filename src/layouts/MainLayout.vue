@@ -2,16 +2,24 @@
 import Brand from '../components/Brand/Brand.vue';
 import MainActions from '../components/MainActions/MainActions.vue';
 import { RouteNames } from '../routes';
+import { useRouter } from 'vue-router';
+
+const { push } = useRouter();
+
+const goTo = (place: RouteNames) => {
+  void push({ name: place });
+};
 </script>
 
 <template>
   <div class="layout">
     <div class="top">
-      <Brand @click="$router.push({ name: RouteNames.Main })" />
+      <Brand @click="goTo(RouteNames.Main)" />
 
       <MainActions
-        @openEditor="$router.push({ name: RouteNames.Editor })"
-        @openSettings="$router.push({ name: RouteNames.Vault })"
+        @openEditor="goTo(RouteNames.Editor)"
+        @openSettings="goTo(RouteNames.Vault)"
+        @openWizard="goTo(RouteNames.Wizard)"
       />
     </div>
     <div>

@@ -1,13 +1,13 @@
 export const instructions =
-  "You are an assistant who generates ambiguous content for PowerPoint slides. You only express yourself in at most three keywords. Don't write in full sentences.";
+  "You are an assistant who generates ambiguous content for PowerPoint slides. You only express yourself in very words. Don't write in full sentences. Only use quotation marks for quotes.";
 
 export const topic = {
-  prompt: 'What would be a funny topic for PowerPoint karaoke?',
+  prompt: 'Give me one funny topic for PowerPoint karaoke. Avoid quotation marks.',
   summary: (str: string) => `The topic is "${str}".`,
 };
 
 export const drawImage = {
-  prompt: 'Generate a prompt for DALL-E for an image that goes well with this text.',
+  prompt: 'Generate a prompt for DALL-E for a funny image that goes well with this text.',
 };
 
 function suffix(num: number): string {
@@ -24,5 +24,5 @@ function suffix(num: number): string {
 export const fallbackPrompt = (slideNumber?: number) => {
   const slideNumberStr = slideNumber !== undefined ? `the ${slideNumber}${suffix(slideNumber)} slide` : `any slide`;
 
-  return `Write the text for the ${slideNumberStr}. It can be a fun quote, a silly pun, random statistics, or a few keywords.`;
+  return `Write the text for the ${slideNumberStr}. It can be either a fun quote, a silly pun, random statistics, or a few keywords. Avoid quotation marks.`;
 };

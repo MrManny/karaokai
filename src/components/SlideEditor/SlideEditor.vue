@@ -33,7 +33,8 @@ const moveThroughSlides = (ev: KeyboardEvent) => {
   }
 };
 
-const insertEmptySlide = (at: number = presentation.slideCount) => {
+const insertEmptySlide = () => {
+  const at = presentation.slideCount;
   presentation.insertEmpty(at);
 
   if (activeSlideIndex.value !== -1) return;

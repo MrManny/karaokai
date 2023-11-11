@@ -9,7 +9,7 @@ import SaveDialog from '../SaveDialog/SaveDialog.vue';
 import { useRouter } from 'vue-router';
 import { RouteNames } from '../../routes';
 
-const emit = defineEmits(['openEditor', 'openSettings']);
+const emit = defineEmits(['openEditor', 'openSettings', 'openWizard']);
 const router = useRouter();
 const isLoadVisible = ref<boolean>(false);
 const isSaveVisible = ref<boolean>(false);
@@ -31,7 +31,8 @@ const onLoaded = () => {
 
 const menu = ref();
 const items: MenuItem[] = [
-  { label: 'New', icon: 'pi pi-fw pi-plus', command: () => emit('openEditor') },
+  { label: 'New (auto)', icon: 'pi pi-fw pi-plus', command: () => emit('openWizard') },
+  { label: 'New (manual)', icon: 'pi pi-fw pi-plus', command: () => emit('openEditor') },
   { label: 'Load', icon: 'pi pi-fw pi-download', command: () => showLoadDialog() },
   { label: 'Save', icon: 'pi pi-fw pi-upload', command: () => showSaveDialog() },
   { label: 'Settings', icon: 'pi pi-fw pi-wrench', command: () => emit('openSettings') },
