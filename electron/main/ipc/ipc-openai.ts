@@ -13,7 +13,7 @@ function getTokenOrThrow(): string {
 
 function createClient(): OpenAI {
   const token = getTokenOrThrow();
-  return new OpenAI({ apiKey: token });
+  return new OpenAI({ apiKey: token, timeout: 60_000 });
 }
 
 ipcMain.handle('chat', async (_, messages: Message[]) => {
