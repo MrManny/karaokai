@@ -1,15 +1,16 @@
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
+import { useTaskCounter } from '../../stores/task-counter';
 
 export function useBusy() {
-  const pendingCounter = ref<number>(0);
-  const isBusy = computed(() => !!pendingCounter.value);
+  const taskCounter = useTaskCounter();
+  const isBusy = computed(() => taskCounter.isBusy);
 
   async function op<T = void>(fn: () => Promise<T>): Promise<T> {
-    pendingCounter.value++;
+    taskCounter.pending++;
     try {
       return await fn();
     } finally {
-      pendingCounter.value--;
+      taskCounter.pending--;
     }
   }
 

@@ -1,7 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useBusy } from './useBusy';
+import { setActivePinia } from 'pinia';
+import { createTestingPinia } from '@pinia/testing';
 
 describe('useBusy', () => {
+  beforeEach(() => {
+    const fakePinia = createTestingPinia({
+      createSpy: vi.fn,
+      initialState: {
+        pending: 0,
+      },
+    });
+    setActivePinia(fakePinia);
+  });
+
   it('should have a boolean busy indicator which is not busy by default', async () => {
     // arrange
     const { isBusy } = useBusy();

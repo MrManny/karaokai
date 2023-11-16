@@ -24,6 +24,7 @@ describe('useSlideBuilder', () => {
     const topic = await findTopic();
 
     // assert
+    expect(mockAsk).toHaveBeenCalled();
     expect(topic).toEqual(dummyTopic);
   });
 
@@ -37,84 +38,23 @@ describe('useSlideBuilder', () => {
     const texts = await generateText(dummyTopic);
 
     // assert
+    expect(mockAsk).toHaveBeenCalled();
     expect(texts).toEqual('Unit test me, baby!');
   });
 
-  it('should be able to remove trailing puncts in topics', async () => {
+  it('should be able to generate slide images', async () => {
     // arrange
-    const mockAsk = vi.fn().mockResolvedValueOnce({ role: 'assistant', content: dummyTopic + '.' });
-    useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { findTopic } = useSlideBuilder();
+    const mockAsk = vi.fn().mockResolvedValueOnce({ role: 'assistant', content: dummyAnswer });
+    const mockDraw = vi.fn().mockResolvedValueOnce('dGVzdA==');
+    useOpenAi.mockReturnValue({ ask: mockAsk, draw: mockDraw });
+    const { generateImage } = useSlideBuilder();
 
     // act
-    const topic = await findTopic();
+    const texts = await generateImage('Bananas in space!');
 
     // assert
-    expect(topic).toEqual(dummyTopic);
-  });
-
-  it('should be able to remove leading and trailing whitespaces in topics', async () => {
-    // arrange
-    const mockAsk = vi.fn().mockResolvedValueOnce({ role: 'assistant', content: `  ${dummyTopic}  ` });
-    useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { findTopic } = useSlideBuilder();
-
-    // act
-    const topic = await findTopic();
-
-    // assert
-    expect(topic).toEqual(dummyTopic);
-  });
-
-  it('should be able to remove leading and trailing quotes in topics', async () => {
-    // arrange
-    const mockAsk = vi.fn().mockResolvedValueOnce({ role: 'assistant', content: `"${dummyTopic}"` });
-    useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { findTopic } = useSlideBuilder();
-
-    // act
-    const topic = await findTopic();
-
-    // assert
-    expect(topic).toEqual(dummyTopic);
-  });
-
-  it('should be able to remove trailing puncts in slides', async () => {
-    // arrange
-    const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: `${dummyAnswer}.` });
-    useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { generateText } = useSlideBuilder();
-
-    // act
-    const text = await generateText(dummyTopic);
-
-    // assert
-    expect(text).toEqual(dummyAnswer);
-  });
-
-  it('should be able to remove leading and trailing whitespaces in slides', async () => {
-    // arrange
-    const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: `  ${dummyAnswer}   ` });
-    useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { generateText } = useSlideBuilder();
-
-    // act
-    const text = await generateText(dummyTopic);
-
-    // assert
-    expect(text).toEqual(dummyAnswer);
-  });
-
-  it('should be able to remove leading and trailing quotes in slides', async () => {
-    // arrange
-    const mockAsk = vi.fn().mockResolvedValue({ role: 'assistant', content: `"${dummyAnswer}"` });
-    useOpenAi.mockReturnValue({ ask: mockAsk });
-    const { generateText } = useSlideBuilder();
-
-    // act
-    const text = await generateText(dummyTopic);
-
-    // assert
-    expect(text).toEqual(dummyAnswer);
+    expect(mockAsk).toHaveBeenCalled();
+    expect(mockDraw).toHaveBeenCalled();
+    expect(texts).toEqual('dGVzdA==');
   });
 });

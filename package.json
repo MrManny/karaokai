@@ -56,6 +56,7 @@
     "zod": "3.22.4"
   },
   "dependencies": {
-    "openai": "^4.17.3"
+    "openai": "^4.17.3",
+    "sharp": "^0.32.6"
   }
 }

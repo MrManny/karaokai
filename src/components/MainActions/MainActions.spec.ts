@@ -65,7 +65,7 @@ describe('MainActions', () => {
     expectMenuItemExists('Save');
   });
 
-  it('has a button labeled "New"', async () => {
+  it('has a button labeled "New (manual)"', async () => {
     // arrange
     renderComponent(MainActions);
 
@@ -73,7 +73,7 @@ describe('MainActions', () => {
     await openMenu();
 
     // assert
-    expectMenuItemExists('New');
+    expectMenuItemExists('New (manual)');
   });
 
   it('emits openEditor when "New" is clicked', async () => {
@@ -82,7 +82,7 @@ describe('MainActions', () => {
 
     // act
     await openMenu();
-    await fireEvent.click(screen.getByText('New'));
+    await fireEvent.click(screen.getByText('New (manual)'));
 
     // assert
     expect(emitted('openEditor')).toBeDefined();

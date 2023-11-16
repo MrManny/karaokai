@@ -9,6 +9,7 @@ import ImageDrop from './ImageDrop.vue';
 import ActionBar from '../ActionBar/ActionBar.vue';
 import { computed } from 'vue';
 import StackedLayout from '../../layouts/StackedLayout.vue';
+import { ensureDataUri } from '../../utils/img-util';
 
 const { isBusy, op } = useBusy();
 const { generateText, generateImage } = useSlideBuilder();
@@ -55,7 +56,8 @@ const onSuggestImage = async () => {
   await op(async () => {
     const image = await generateImage(props.slide.text?.text ?? '');
     console.debug('Image generated', { image });
-    setImage(`data:image/png;base64,${image}`);
+    const dataUri = ensureDataUri(image);
+    setImage(dataUri);
   });
 };
 </script>
