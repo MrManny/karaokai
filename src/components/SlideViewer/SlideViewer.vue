@@ -3,6 +3,7 @@ import type { Slide } from '../../types/slide-schema';
 import type { PropType } from 'vue';
 import { computed } from 'vue';
 import { ensureDataUri } from '../../utils/img-util';
+import MultilineText from '../MutlilineText/MultilineText.vue';
 
 const props = defineProps({
   slide: {
@@ -20,9 +21,7 @@ const imageBackgroundStyle = computed(() => {
 <template>
   <div class="slide" data-testid="slide" :style="imageBackgroundStyle">
     <div class="text-container">
-      <p v-if="slide.text?.text" data-testid="slide-text">
-        {{ slide.text?.text }}
-      </p>
+      <MultilineText :text="slide.text?.text" data-testid="slide-text" />
     </div>
 
     <div></div>
