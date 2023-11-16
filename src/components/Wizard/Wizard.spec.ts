@@ -4,9 +4,29 @@ import { cleanup, screen } from '@testing-library/vue';
 import { renderComponent } from '../../utils/test-util';
 import Wizard from './Wizard.vue';
 
-vi.mock('../../composables/useBusy');
+const routerPushMock = vi.fn();
+const findTopicMock = vi.fn();
+const generateImageMock = vi.fn();
+const generateTextMock = vi.fn();
+const opMock = vi.fn();
+const isBusyMock = vi.fn().mockReturnValue(false);
+vi.mock('../../composables/useBusy', () => ({
+  useBusy: vi.fn().mockImplementation(() => ({
+    op: opMock,
+    isBusy: isBusyMock,
+  })),
+}));
 vi.mock('../../composables/useSlideBuilder', () => ({
-  useSlideBuilder: vi.fn(),
+  useSlideBuilder: vi.fn().mockImplementation(() => ({
+    findTopic: findTopicMock,
+    generateImage: generateImageMock,
+    generateText: generateTextMock,
+  })),
+}));
+vi.mock('vue-router', () => ({
+  useRouter: () => ({
+    push: routerPushMock,
+  }),
 }));
 
 const getTopicInput = () => screen.getByTestId<HTMLInputElement>('topic-input');
