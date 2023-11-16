@@ -17,30 +17,55 @@ const { push } = useRouter();
 const { findTopic, generateImage, generateText } = useSlideBuilder();
 const { op, isBusy } = useBusy();
 const length = ref<number>(5);
-const generated = ref<number>(0);
+const images = ref<number>(3);
+const tasksDone = ref<number>(0);
+const tasksTotal = ref<number>(0);
 const progress = computed<number>(() => {
-  const percentage = generated.value / length.value;
+  if (tasksTotal.value <= 0) return 0;
+  const percentage = tasksDone.value / tasksTotal.value;
   return Math.round(percentage * 100);
 });
 
-const generateSlide = async (topic: string, slideNo: number): Promise<Slide> => {
-  let text: string = '',
-    image: string = '';
-  text = await generateText(topic, slideNo);
+function* range(toExcl: number): Generator<number> {
+  for (let i = 0; i < toExcl; i++) yield i;
+}
+
+function pickRandomNumbers(howMany: number, toExcl: number): number[] {
+  const available: number[] = Array.from(range(toExcl));
+  if (howMany >= toExcl) return available;
+
+  const picked: number[] = [];
+  while (picked.length < howMany) {
+    const pickedIndex = Math.ceil(Math.random() * available.length);
+    const [pickedValue] = available.splice(pickedIndex, 1);
+    picked.push(pickedValue);
+  }
+  return picked;
+}
+
+async function generateSlide(topic: string, slideNo: number, withImage: boolean): Promise<Slide> {
+  const slide: Slide = {};
+  const text = await generateText(topic, slideNo);
+  slide.text = { text };
   console.debug(`Generated slide's ${slideNo} text: "${text}"`);
+  if (!withImage) return slide;
+
   try {
-    image = await generateImage(text);
+    const image = await generateImage(text);
+    slide.image = { base64: image };
     console.debug(`Generated slide's ${slideNo} image`);
   } catch (e) {
     console.error(e);
   }
-  return {
-    text: { text },
-    image: { base64: image },
-  };
-};
+
+  return slide;
+}
 const generate = () => {
-  generated.value = 0;
+  tasksDone.value = 0;
+  tasksTotal.value = 0;
+
+  const slidesWithImage = new Set<number>(Array.from(pickRandomNumbers(images.value, length.value)));
+
   op(async () => {
     if (!presentation.topic) {
       presentation.topic = await findTopic();
@@ -49,12 +74,14 @@ const generate = () => {
 
     const promises: Promise<Slide>[] = [];
     for (let i = 0; i < length.value; i++) {
-      const slideGeneration = generateSlide(presentation.topic, i + 1).then((slide) => {
-        generated.value++;
+      const withImage = slidesWithImage.has(i);
+      const slideGeneration = generateSlide(presentation.topic, i + 1, withImage).then((slide) => {
+        tasksDone.value++;
         return slide;
       });
       promises.push(slideGeneration);
     }
+    tasksTotal.value = promises.length;
     presentation.slides = await Promise.all(promises);
     console.debug('Done generating');
     void push({ name: RouteNames.Editor });
@@ -84,6 +111,13 @@ const generate = () => {
           <Slider v-model.number="length" :min="3" :max="10" :step="1" />
         </div>
 
+        <p>How many images should the AI generate?</p>
+
+        <div class="slider">
+          <span class="number">{{ images }}</span>
+          <Slider v-model.number="images" :min="0" :max="5" :step="1" />
+        </div>
+
         <ProgressBar v-if="isBusy" :mode="progress ? 'determinate' : 'indeterminate'" :value="progress" />
 
         <Button :disabled="isBusy" :loading="isBusy" label="Generate" icon="pi pi-search" @click="generate" />
@@ -103,7 +137,7 @@ const generate = () => {
 }
 
 div.robot {
-  background-image: url('public/speaking_robot.jpg');
+  background-image: url('/speaking_robot.jpg');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
