@@ -3,8 +3,7 @@ import { renderComponent } from '../../utils/test-util';
 import { screen, cleanup } from '@testing-library/vue';
 import MultilineText from './MultilineText.vue';
 
-const getLines = (...texts: string[]) => texts
-  .map((text) => screen.getByText(text));
+const getLines = (...texts: string[]) => texts.map((text) => screen.getByText(text));
 
 describe('MultilineText', () => {
   afterEach(() => {

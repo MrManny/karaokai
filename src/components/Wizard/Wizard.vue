@@ -102,25 +102,37 @@ const generate = () => {
           free to leave it blank, then I'll just come up with something for you.
         </p>
 
-        <InputText v-model="presentation.topic" placeholder="Topic" />
+        <InputText data-testid="topic-input" v-model="presentation.topic" placeholder="Topic" />
 
         <p>How long you want it to be?</p>
 
         <div class="slider">
           <span class="number">{{ length }}</span>
-          <Slider v-model.number="length" :min="3" :max="10" :step="1" />
+          <Slider data-testid="slides-length-input" v-model.number="length" :min="3" :max="10" :step="1" />
         </div>
 
         <p>How many images should the AI generate?</p>
 
         <div class="slider">
           <span class="number">{{ images }}</span>
-          <Slider v-model.number="images" :min="0" :max="5" :step="1" />
+          <Slider data-testid="image-number-input" v-model.number="images" :min="0" :max="5" :step="1" />
         </div>
 
-        <ProgressBar v-if="isBusy" :mode="progress ? 'determinate' : 'indeterminate'" :value="progress" />
+        <ProgressBar
+          data-testid="generate-progress-bar"
+          v-if="isBusy"
+          :mode="progress ? 'determinate' : 'indeterminate'"
+          :value="progress"
+        />
 
-        <Button :disabled="isBusy" :loading="isBusy" label="Generate" icon="pi pi-search" @click="generate" />
+        <Button
+          data-testid="generate-button"
+          :disabled="isBusy"
+          :loading="isBusy"
+          label="Generate"
+          icon="pi pi-search"
+          @click="generate"
+        />
       </StackedLayout>
     </main>
   </main>
