@@ -27,7 +27,7 @@ const topic = ref<string>(props.topic);
 
 const suggestTopic = async () => {
   await op(async () => {
-    topic.value = await findTopic(props.topicPrompt);
+    topic.value = await findTopic();
   });
 };
 </script>
