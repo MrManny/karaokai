@@ -11,6 +11,8 @@ import { useRouter } from 'vue-router';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import { RouteNames } from '../../routes';
 import type { Slide } from '../../types/slide-schema';
+import FolderPicker from '../FolderPicker/FolderPicker.vue';
+import { ipcRenderer } from 'electron';
 
 const presentation = usePresentation();
 const { push } = useRouter();
@@ -18,6 +20,7 @@ const { findTopic, generateImage, generateText } = useSlideBuilder();
 const { op, isBusy } = useBusy();
 const length = ref<number>(5);
 const images = ref<number>(3);
+const localImagePath = ref<string>('');
 const tasksDone = ref<number>(0);
 const tasksTotal = ref<number>(0);
 const progress = computed<number>(() => {
@@ -60,23 +63,40 @@ async function generateSlide(topic: string, slideNo: number, withImage: boolean)
 
   return slide;
 }
+
+async function loadBackupImages(): Promise<string[]> {
+  const howMany = length.value - images.value;
+  if (!howMany) return [];
+
+  return await ipcRenderer.invoke('pick-random-images', localImagePath.value, howMany);
+}
+
 const generate = () => {
   tasksDone.value = 0;
   tasksTotal.value = 0;
 
-  const slidesWithImage = new Set<number>(Array.from(pickRandomNumbers(images.value, length.value)));
+  const slidesWithAiImage = new Set<number>(Array.from(pickRandomNumbers(images.value, length.value)));
 
   op(async () => {
+    const backupImages = localImagePath.value ? await loadBackupImages() : [];
+
     if (!presentation.topic) {
       presentation.topic = await findTopic();
     }
-    console.debug('Generating slides', { desiredLength: length.value, topic: presentation.topic });
+    console.debug('Generating slides');
 
     const promises: Promise<Slide>[] = [];
     for (let i = 0; i < length.value; i++) {
-      const withImage = slidesWithImage.has(i);
-      const slideGeneration = generateSlide(presentation.topic, i + 1, withImage).then((slide) => {
+      const withAiImage = slidesWithAiImage.has(i);
+      const slideGeneration = generateSlide(presentation.topic, i + 1, withAiImage).then((slide) => {
         tasksDone.value++;
+
+        if (!withAiImage && backupImages.length) {
+          const [localImage] = backupImages.splice(0, 1);
+          console.debug('Using local image', { slide: i, localImage });
+          slide.image = { base64: localImage };
+        }
+
         return slide;
       });
       promises.push(slideGeneration);
@@ -97,12 +117,16 @@ const generate = () => {
       <StackedLayout>
         <h2>Wizard</h2>
 
+        <h3>Topic</h3>
+
         <p>
           Hi! I'm a wizard. I do presentations and stuff. What is the <strong>topic</strong> of your presentation? Feel
           free to leave it blank, then I'll just come up with something for you.
         </p>
 
         <InputText data-testid="topic-input" v-model="presentation.topic" placeholder="Topic" />
+
+        <h3>Length</h3>
 
         <p>How long you want it to be?</p>
 
@@ -111,11 +135,19 @@ const generate = () => {
           <Slider data-testid="slides-length-input" v-model.number="length" :min="3" :max="10" :step="1" />
         </div>
 
+        <h3>Images</h3>
+
         <p>How many images should the AI generate?</p>
 
         <div class="slider">
           <span class="number">{{ images }}</span>
           <Slider data-testid="image-number-input" v-model.number="images" :min="0" :max="5" :step="1" />
+        </div>
+
+        <p>Do you want me to use a folder of other images for the rest?</p>
+
+        <div>
+          <FolderPicker @update:folder="(folder: string) => (localImagePath = folder)" />
         </div>
 
         <ProgressBar
