@@ -5,15 +5,26 @@ import { fallbackPrompt, drawImage, instructions, topic } from './prompts';
 export function useSlideBuilder() {
   const { ask, draw } = useOpenAi();
 
+  function systemMessage(content: string): Message & { role: 'system' } {
+    return {
+      role: 'system',
+      content,
+    };
+  }
+
+  function userMessage(content: string): Message & { role: 'user' } {
+    return {
+      role: 'user',
+      content,
+    };
+  }
+
   function buildInitialHistory(...moreDetails: string[]): Message[] {
-    return [
-      { role: 'system', content: instructions },
-      ...moreDetails.map((detail) => ({ role: 'system', content: detail })),
-    ];
+    return [systemMessage(instructions), ...moreDetails.map((detail) => systemMessage(detail))];
   }
 
   async function findTopic(): Promise<string> {
-    const messages = [...buildInitialHistory(), { role: 'user', content: topic.prompt }];
+    const messages = [...buildInitialHistory(), userMessage(topic.prompt)];
     const answer = await ask(messages);
     return answer.content;
   }
@@ -21,16 +32,19 @@ export function useSlideBuilder() {
   async function generateText(forTopic: string, slideNumber?: number): Promise<string> {
     const history = buildInitialHistory(topic.summary(forTopic));
     const prompt = fallbackPrompt(slideNumber);
-    const messages = [...history, { role: 'user', content: prompt }];
+    const messages = [...history, userMessage(prompt)];
     return await ask(messages).then((m) => m.content);
   }
 
-  async function generateImage(slideText: string): Promise<string> {
-    const messages = [
-      ...buildInitialHistory(),
-      { role: 'user', content: `The slide's text is: ${slideText}` },
-      { role: 'user', content: drawImage.prompt },
-    ];
+  async function generateImage(slideText?: string, topic?: string): Promise<string> {
+    const details: string[] = [];
+    if (topic) {
+      details.push(`The topic is: ${topic}`);
+    }
+    if (slideText) {
+      details.push(`The slide contains the text: ${slideText}`);
+    }
+    const messages = [...buildInitialHistory(...details), { role: 'user', content: drawImage.prompt }];
     const prompt = await ask(messages).then((m) => m.content);
     return await draw(prompt);
   }
