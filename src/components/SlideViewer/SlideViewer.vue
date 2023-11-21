@@ -20,7 +20,7 @@ const imageBackgroundStyle = computed(() => {
 
 <template>
   <div class="slide" data-testid="slide" :style="imageBackgroundStyle">
-    <div class="text-container">
+    <div class="text-container" v-if="slide.text?.text">
       <MultilineText :text="slide.text?.text" data-testid="slide-text" />
     </div>
 
@@ -42,19 +42,17 @@ const imageBackgroundStyle = computed(() => {
 
   background-repeat: no-repeat;
   background-position: center center;
-  background-size: cover;
-}
-
-p {
-  font-size: 24pt;
-  hyphens: auto;
+  background-size: contain;
 }
 
 .text-container {
-  background-color: rgba(0, 0, 0, 0.33);
+  background-color: rgba(0, 0, 0, 0.67);
   backdrop-filter: blur(8px);
   border-radius: 24px;
   padding: 24px 32px;
+
+  font-size: 24pt;
+  hyphens: auto;
 }
 
 img {
