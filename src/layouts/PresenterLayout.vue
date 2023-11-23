@@ -4,9 +4,10 @@ import { useRouter } from 'vue-router';
 import { RouteNames } from '../routes';
 import { useKeyDown, WellKnownKeys } from '../composables/useKeyDown';
 import { usePresenter } from '../composables/usePresenter';
+import SlideProgress from '../components/SlideProgress/SlideProgress.vue';
 
 const { push } = useRouter();
-const { activeSlide, activeSlideIndex, goForward, goBack } = usePresenter();
+const { activeSlide, activeSlideIndex, goForward, goBack, totalSlides } = usePresenter();
 
 const end = () => {
   void push({ name: RouteNames.Main });
@@ -21,14 +22,17 @@ useKeyDown([
 
 <template>
   <main data-testid="presentation">
-    <Transition>
-      <SlideViewer :key="activeSlideIndex" :slide="activeSlide ?? {}" />
-    </Transition>
+    <SlideViewer :slide="activeSlide ?? {}" />
+
+    <SlideProgress :active-slide="activeSlideIndex" :total-slides="totalSlides" />
   </main>
 </template>
 
 <style scoped>
 main {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
   position: absolute;
   z-index: 1;
   top: 0;
