@@ -49,7 +49,7 @@ describe('SlideProgress.vue', () => {
     const wrapper = shallowMount(SlideProgress, {
       props: { totalSlides: 5 },
     });
-    expect(wrapper.find('.slide-progress').attributes('style')).toContain('grid-template-columns: repeat(6, 1fr)');
+    expect(wrapper.find('.slide-progress').attributes('style')).toContain('grid-template-columns: repeat(5, 1fr) auto');
   });
 
   it('generates the correct slideNumbers array', () => {
