@@ -10,6 +10,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  nextDue: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const gridCss = computed(() => ({
@@ -31,7 +35,7 @@ const slideNumbers = computed(() => {
       v-for="n of slideNumbers"
       :key="n"
       class="segment"
-      :class="{ active: n === activeSlide, past: n < activeSlide }"
+      :class="{ active: n === activeSlide, next: nextDue && n === activeSlide + 1 }"
     ></div>
     <div class="progress">{{ activeSlide + 1 }} / {{ totalSlides }}</div>
   </div>
@@ -41,23 +45,22 @@ const slideNumbers = computed(() => {
 .slide-progress {
   display: grid;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  margin: 8px 8px 4px;
 }
 
 .segment {
-  background-color: var(--surface-50);
-  border: 1px solid var(--gray-400);
+  background-color: var(--surface-100);
   border-radius: 5px;
   height: 12px;
 }
 
-.segment.active {
-  background-color: var(--surface-700);
+.segment.next {
+  background-color: var(--surface-200) !important;
 }
 
-.segment.past {
-  background-color: var(--surface-400);
-  border-color: var(--gray-300);
+.segment.active {
+  background-color: var(--primary-color);
 }
 
 .progress {
