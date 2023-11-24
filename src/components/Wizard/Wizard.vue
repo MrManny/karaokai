@@ -20,12 +20,13 @@ const { push } = useRouter();
 const { findTopic, generateImage, generateText } = useSlideBuilder();
 const { op, isBusy } = useBusy();
 const length = ref<number>(5);
-const images = ref<number>(3);
+const images = ref<number>(0);
 const duration = ref<number>(15);
 const addText = ref<boolean>(true);
 const localImagePath = ref<string>('');
 const tasksDone = ref<number>(0);
 const tasksTotal = ref<number>(0);
+const withIntroAndOutro = ref<boolean>(true);
 
 const progress = computed<number>(() => {
   if (tasksTotal.value <= 0) return 0;
@@ -33,7 +34,7 @@ const progress = computed<number>(() => {
   return Math.round(percentage * 100);
 });
 const topicIsUserProvided = computed<boolean>(() => !!presentation.topic);
-const imagesAreUserProvided = computed<boolean>(() => images.value > 0);
+const imagesAreUserProvided = computed<boolean>(() => images.value === 0);
 
 watch(duration, (value: number) => {
   presentation.timer = {
@@ -149,6 +150,11 @@ const generate = () => {
         <div class="slider">
           <span class="number">{{ length }}</span>
           <Slider data-testid="slides-length-input" v-model.number="length" :min="3" :max="30" :step="1" />
+        </div>
+
+        <div class="checkbox">
+          <Checkbox v-model="withIntroAndOutro" binary input-id="add-intro-checkbox" />
+          <label for="add-intro-checkbox">with intro and outro</label>
         </div>
 
         <p>How many seconds between slides (in seconds)?</p>
