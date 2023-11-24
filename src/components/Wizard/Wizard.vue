@@ -6,7 +6,7 @@ import ProgressBar from 'primevue/progressbar';
 import Slider from 'primevue/slider';
 import StackedLayout from '../../layouts/StackedLayout.vue';
 import Checkbox from 'primevue/checkbox';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useBusy } from '../../composables/useBusy';
 import { useRouter } from 'vue-router';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
@@ -21,6 +21,7 @@ const { findTopic, generateImage, generateText } = useSlideBuilder();
 const { op, isBusy } = useBusy();
 const length = ref<number>(5);
 const images = ref<number>(3);
+const duration = ref<number>(15);
 const addText = ref<boolean>(true);
 const localImagePath = ref<string>('');
 const tasksDone = ref<number>(0);
@@ -33,6 +34,12 @@ const progress = computed<number>(() => {
 });
 const topicIsUserProvided = computed<boolean>(() => !!presentation.topic);
 const imagesAreUserProvided = computed<boolean>(() => images.value > 0);
+
+watch(duration, (value: number) => {
+  presentation.timer = {
+    timePerTick: value * 1000,
+  };
+});
 
 function* range(toExcl: number): Generator<number> {
   for (let i = 0; i < toExcl; i++) yield i;
@@ -166,6 +173,12 @@ const generate = () => {
         <div class="slider">
           <span class="number">{{ length }}</span>
           <Slider data-testid="slides-length-input" v-model.number="length" :min="3" :max="30" :step="1" />
+        </div>
+
+        <p>How many seconds between slides (in seconds)?</p>
+        <div class="slider">
+          <span class="number">{{ length }}</span>
+          <Slider data-testid="duration-input" v-model.number="duration" :min="5" :max="60" :step="1" />
         </div>
 
         <h3>Images</h3>
