@@ -18,7 +18,7 @@ const props = defineProps({
 });
 
 const presentation = usePresentation();
-const { activeSlideIndex, activeSlide, canGoBack, canGoForward, goBack, goForward } = usePresenter();
+const { activeSlideIndex, activeSlide, canGoBack, canGoForward, goBack, goForward } = usePresenter({});
 
 const moveThroughSlides = (ev: KeyboardEvent) => {
   switch (ev.key) {

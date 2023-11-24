@@ -5,26 +5,44 @@ import { RouteNames } from '../routes';
 import { useKeyDown, WellKnownKeys } from '../composables/useKeyDown';
 import { usePresenter } from '../composables/usePresenter';
 import SlideProgress from '../components/SlideProgress/SlideProgress.vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const { push } = useRouter();
-const { activeSlide, activeSlideIndex, goForward, goBack, totalSlides } = usePresenter();
+const isNextDue = ref<boolean>(false);
 
 const end = () => {
   void push({ name: RouteNames.Main });
 };
+
+const { activeSlide, activeSlideIndex, goForward, goBack, start, stop, totalSlides } = usePresenter({
+  onTickDue: () => {
+    isNextDue.value = true;
+  },
+  onTick: () => {
+    isNextDue.value = false;
+  },
+});
 
 useKeyDown([
   { key: WellKnownKeys.Escape, then: end },
   { key: WellKnownKeys.ArrowLeft, then: goBack },
   { key: WellKnownKeys.ArrowRight, then: goForward },
 ]);
+
+onMounted(() => {
+  start();
+});
+
+onBeforeUnmount(() => {
+  stop();
+});
 </script>
 
 <template>
   <main data-testid="presentation">
     <SlideViewer :slide="activeSlide ?? {}" />
 
-    <SlideProgress :active-slide="activeSlideIndex" :total-slides="totalSlides" />
+    <SlideProgress :active-slide="activeSlideIndex" :total-slides="totalSlides" :next-due="isNextDue" />
   </main>
 </template>
 

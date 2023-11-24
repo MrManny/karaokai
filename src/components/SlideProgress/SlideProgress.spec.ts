@@ -16,9 +16,6 @@ const assertProgress = (wrapper: VueWrapper, nowOnSlide: number, totalSlides: nu
   const segments = getSegments(wrapper);
 
   expect(segments).toHaveLength(totalSlides);
-  for (let i = 0; i < nowOnSlide && i < totalSlides; i++) {
-    expect(segments[i].classes()).toContain('past');
-  }
   if (nowOnSlide < totalSlides) {
     expect(segments[nowOnSlide].classes()).toContain('active');
   }

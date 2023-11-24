@@ -4,6 +4,7 @@ import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import { screen, fireEvent, cleanup } from '@testing-library/vue';
 import { renderComponent } from '../../utils/test-util';
 import { createPinia, setActivePinia } from 'pinia';
+import { usePresentation } from '../../stores/presentation';
 
 vi.mock('../../composables/useSlideBuilder', () => ({
   useSlideBuilder: vi.fn(),
@@ -18,6 +19,21 @@ const getPlayButton = (): HTMLButtonElement => screen.getByLabelText('Play');
 describe('SlideEditor', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
+    usePresentation().$state = {
+      slides: [
+        {
+          text: { text: 'Hello world!' },
+        },
+        {
+          image: { base64: '01234' },
+        },
+        {
+          text: { text: 'Lorem ipsum' },
+          image: { base64: 'dolorsit' },
+        },
+      ],
+      topic: 'A test well tested',
+    };
   });
 
   afterEach(() => {
