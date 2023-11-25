@@ -15,7 +15,7 @@ import { RouteNames } from '../../routes';
 import type { Slide } from '../../types/slide-schema';
 import FolderPicker from '../FolderPicker/FolderPicker.vue';
 import { insertIntroAndOutro, loadBackupImages, pickRandomNumbers } from './Wizard.util';
-import AiUsedMessage from './AiUsedMessage.vue';
+import AiUseMessage from '../AiUseMessage/AiUseMessage.vue';
 import SliderWithLabel from '../SliderWithLabel/SliderWithLabel.vue';
 
 const presentation = usePresentation();
@@ -143,7 +143,7 @@ const generate = () => {
             </div>
           </template>
           <template #footer>
-            <AiUsedMessage v-if="!presentation.topic" />
+            <AiUseMessage v-if="!presentation.topic" />
           </template>
         </Card>
 
@@ -187,7 +187,7 @@ const generate = () => {
             </div>
           </template>
           <template #footer>
-            <AiUsedMessage v-if="addText" :num-ops="length" />
+            <AiUseMessage v-if="addText" :num-ops="length" />
           </template>
         </Card>
 
@@ -222,7 +222,7 @@ const generate = () => {
             </div>
           </template>
           <template #footer>
-            <AiUsedMessage v-if="addImages" :num-ops="images" />
+            <AiUseMessage v-if="addImages" :num-ops="images" />
           </template>
         </Card>
 

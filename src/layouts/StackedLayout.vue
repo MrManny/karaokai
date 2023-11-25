@@ -1,15 +1,19 @@
 <script lang="ts" setup>
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   gap: {
     type: Number,
     default: 8,
     validator: (value) => typeof value === 'number' && value >= 0,
   },
 });
+
+const gapStyle = computed(() => `gap: ${props.gap}px`);
 </script>
 
 <template>
-  <div class="stacked">
+  <div class="stacked" :style="gapStyle">
     <slot />
   </div>
 </template>
@@ -18,6 +22,5 @@ defineProps({
 .stacked {
   display: flex;
   flex-direction: column;
-  gap: v-bind(gap);
 }
 </style>
