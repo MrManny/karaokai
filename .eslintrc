@@ -2,13 +2,13 @@
   "root": true,
   "parser": "vue-eslint-parser",
   "parserOptions": {
-    "parser": "@typescript-eslint/parser",
+    "parser": "@typescript-eslint/parser"
   },
   "extends": [
     "plugin:vue/strongly-recommended",
     "eslint:recommended",
     "@vue/typescript/recommended",
-    "prettier",
+    "prettier"
   ],
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {

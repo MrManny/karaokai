@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const promptSchema = z.string().trim();
+const layoutSchema = z.enum(['default', 'intro', 'outro']);
 
 export const slideSchema = z.object({
   text: z
@@ -17,6 +18,8 @@ export const slideSchema = z.object({
       negative: promptSchema.optional(),
     })
     .optional(),
+
+  layout: layoutSchema.default('default').optional(),
 });
 
 export type Slide = z.infer<typeof slideSchema>;

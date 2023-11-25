@@ -13,19 +13,20 @@ import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import { RouteNames } from '../../routes';
 import type { Slide } from '../../types/slide-schema';
 import FolderPicker from '../FolderPicker/FolderPicker.vue';
-import { ipcRenderer } from 'electron';
+import { insertIntroAndOutro, loadBackupImages, pickRandomNumbers } from './Wizard.util';
 
 const presentation = usePresentation();
 const { push } = useRouter();
 const { findTopic, generateImage, generateText } = useSlideBuilder();
 const { op, isBusy } = useBusy();
 const length = ref<number>(5);
-const images = ref<number>(3);
+const images = ref<number>(0);
 const duration = ref<number>(15);
 const addText = ref<boolean>(true);
 const localImagePath = ref<string>('');
 const tasksDone = ref<number>(0);
 const tasksTotal = ref<number>(0);
+const withIntroAndOutro = ref<boolean>(true);
 
 const progress = computed<number>(() => {
   if (tasksTotal.value <= 0) return 0;
@@ -33,30 +34,13 @@ const progress = computed<number>(() => {
   return Math.round(percentage * 100);
 });
 const topicIsUserProvided = computed<boolean>(() => !!presentation.topic);
-const imagesAreUserProvided = computed<boolean>(() => images.value > 0);
+const imagesAreUserProvided = computed<boolean>(() => images.value === 0);
 
 watch(duration, (value: number) => {
   presentation.timer = {
     timePerTick: value * 1000,
   };
 });
-
-function* range(toExcl: number): Generator<number> {
-  for (let i = 0; i < toExcl; i++) yield i;
-}
-
-function pickRandomNumbers(howMany: number, toExcl: number): number[] {
-  const available: number[] = Array.from(range(toExcl));
-  if (howMany >= toExcl) return available;
-
-  const picked: number[] = [];
-  while (picked.length < howMany) {
-    const pickedIndex = Math.ceil(Math.random() * available.length);
-    const [pickedValue] = available.splice(pickedIndex, 1);
-    picked.push(pickedValue);
-  }
-  return picked;
-}
 
 interface GenerationOptions {
   topic: string;
@@ -85,14 +69,6 @@ async function generateSlide({ topic, slideNo, withImage, withText }: Generation
   return slide;
 }
 
-async function loadBackupImages(): Promise<string[]> {
-  console.debug({ localImagePath: localImagePath.value });
-  const howMany = length.value - images.value;
-  if (!howMany) return [];
-
-  return await ipcRenderer.invoke('pick-random-images', localImagePath.value, howMany);
-}
-
 const generate = () => {
   tasksDone.value = 0;
   tasksTotal.value = 0;
@@ -100,7 +76,7 @@ const generate = () => {
   const slidesWithAiImage = new Set<number>(Array.from(pickRandomNumbers(images.value, length.value)));
 
   op(async () => {
-    const backupImages = localImagePath.value ? await loadBackupImages() : [];
+    const backupImages = await loadBackupImages(localImagePath.value, length.value - images.value);
 
     if (!presentation.topic) {
       presentation.topic = await findTopic();
@@ -120,7 +96,6 @@ const generate = () => {
 
         if (!withAiImage && backupImages.length) {
           const [localImage] = backupImages.splice(0, 1);
-          console.debug('Using local image', { slide: i, localImage });
           slide.image = { base64: localImage };
         }
 
@@ -130,7 +105,11 @@ const generate = () => {
     }
     tasksTotal.value = promises.length;
     presentation.slides = await Promise.all(promises);
-    console.debug('Done generating');
+    if (withIntroAndOutro.value) {
+      presentation.slides = insertIntroAndOutro(presentation.topic, presentation.slides);
+    }
+
+    console.debug('Done generating', { slides: presentation.slides });
     void push({ name: RouteNames.Editor });
   });
 };
@@ -173,6 +152,11 @@ const generate = () => {
         <div class="slider">
           <span class="number">{{ length }}</span>
           <Slider data-testid="slides-length-input" v-model.number="length" :min="3" :max="30" :step="1" />
+        </div>
+
+        <div class="checkbox">
+          <Checkbox v-model="withIntroAndOutro" binary input-id="add-intro-checkbox" />
+          <label for="add-intro-checkbox">with intro and outro</label>
         </div>
 
         <p>How many seconds between slides (in seconds)?</p>
