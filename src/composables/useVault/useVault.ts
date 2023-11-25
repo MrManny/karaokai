@@ -5,6 +5,11 @@ export const enum TokenName {
 }
 
 export function useVault() {
+  const has = async (name: TokenName): Promise<boolean> => {
+    const availableKeys = await keys();
+    return availableKeys.includes(name);
+  };
+
   const keys = async (): Promise<string[]> => {
     return await ipcRenderer.invoke('vault:get-keys');
   };
@@ -13,5 +18,5 @@ export function useVault() {
     await ipcRenderer.invoke('vault:set-token', name, token);
   };
 
-  return { keys, set };
+  return { has, keys, set };
 }

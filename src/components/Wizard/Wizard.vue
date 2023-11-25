@@ -5,7 +5,9 @@ import InputText from 'primevue/inputtext';
 import ProgressBar from 'primevue/progressbar';
 import Slider from 'primevue/slider';
 import StackedLayout from '../../layouts/StackedLayout.vue';
-import Checkbox from 'primevue/checkbox';
+import Message from 'primevue/message';
+import Card from 'primevue/card';
+import RadioButton from 'primevue/radiobutton';
 import { computed, ref, watch } from 'vue';
 import { useBusy } from '../../composables/useBusy';
 import { useRouter } from 'vue-router';
@@ -14,15 +16,17 @@ import { RouteNames } from '../../routes';
 import type { Slide } from '../../types/slide-schema';
 import FolderPicker from '../FolderPicker/FolderPicker.vue';
 import { insertIntroAndOutro, loadBackupImages, pickRandomNumbers } from './Wizard.util';
+import AiUsedMessage from './AiUsedMessage.vue';
 
 const presentation = usePresentation();
 const { push } = useRouter();
-const { findTopic, generateImage, generateText } = useSlideBuilder();
+const { findTopic, generateImage, generateText, isOpenaiAvailable } = useSlideBuilder();
 const { op, isBusy } = useBusy();
-const length = ref<number>(5);
-const images = ref<number>(0);
+const length = ref<number>(15);
+const images = ref<number>(1);
 const duration = ref<number>(15);
 const addText = ref<boolean>(true);
+const addImages = ref<boolean>(false);
 const localImagePath = ref<string>('');
 const tasksDone = ref<number>(0);
 const tasksTotal = ref<number>(0);
@@ -33,8 +37,6 @@ const progress = computed<number>(() => {
   const percentage = tasksDone.value / tasksTotal.value;
   return Math.round(percentage * 100);
 });
-const topicIsUserProvided = computed<boolean>(() => !!presentation.topic);
-const imagesAreUserProvided = computed<boolean>(() => images.value === 0);
 
 watch(duration, (value: number) => {
   presentation.timer = {
@@ -116,120 +118,173 @@ const generate = () => {
 </script>
 
 <template>
-  <main class="split">
-    <div class="robot" />
+  <main>
+    <StackedLayout>
+      <Message v-if="!isOpenaiAvailable" severity="warn" :closable="false">
+        <div>OpenAI credentials have not been configured. AI operations are unavailable.</div>
+        <div>Configure your OpenAI credentials in the settings here:</div>
+        <Button label="Configure OpenAI" severity="warning" @click="$router.push({ name: RouteNames.Vault })" />
+      </Message>
 
-    <main>
-      <StackedLayout>
-        <h2>Wizard</h2>
+      <div class="card-deck">
+        <Card>
+          <template #title>Topic</template>
+          <template #content>
+            <p>
+              Hi! I'm a wizard. I do presentations and stuff. What is the <strong>topic</strong> of your presentation?
+              Feel free to leave it blank, then I'll just come up with something for you.
+            </p>
 
-        <h3>Topic</h3>
+            <div>
+              <InputText data-testid="topic-input" v-model.trim="presentation.topic" placeholder="Topic" />
+            </div>
+          </template>
+          <template #footer>
+            <AiUsedMessage v-if="!presentation.topic" />
+          </template>
+        </Card>
 
-        <p>
-          Hi! I'm a wizard. I do presentations and stuff. What is the <strong>topic</strong> of your presentation? Feel
-          free to leave it blank, then I'll just come up with something for you.
-        </p>
+        <Card>
+          <template #title>Length</template>
+          <template #content>
+            <p>How many slides should this presentation contain?</p>
 
-        <InputText data-testid="topic-input" v-model.trim="presentation.topic" placeholder="Topic" />
+            <div class="slider">
+              <Slider data-testid="slides-length-input" v-model.number="length" :min="1" :max="30" :step="1" />
+              <span class="number">{{ length }}</span>
+            </div>
 
-        <p v-if="topicIsUserProvided">A topic has been provided. GPT will not be tasked.</p>
-        <p v-else>A topic has not been provided. GPT will find you one.</p>
+            <p>Do you also want an intro and outro slide on top of that?</p>
 
-        <h3>Images</h3>
+            <div class="radio">
+              <RadioButton v-model="withIntroAndOutro" :value="true" name="add-intro" />
+              <label for="add-text">Yes</label>
+            </div>
+            <div class="radio">
+              <RadioButton v-model="withIntroAndOutro" :value="false" name="add-intro" />
+              <label for="add-text">No</label>
+            </div>
+          </template>
+        </Card>
 
-        <div class="checkbox">
-          <Checkbox v-model="addText" binary input-id="add-text-checkbox" />
-          <label for="add-text-checkbox">Generate texts</label>
-        </div>
+        <Card>
+          <template #title>Text</template>
+          <template #content>
+            <p>Do you want me to create texts?</p>
+            <div class="radio">
+              <RadioButton v-model="addText" :value="true" name="add-text" />
+              <label for="add-text">Yes</label>
+            </div>
+            <div class="radio">
+              <RadioButton v-model="addText" :value="false" name="add-text" />
+              <label for="add-text">No</label>
+            </div>
+          </template>
+          <template #footer>
+            <AiUsedMessage v-if="addText" :num-ops="length" />
+          </template>
+        </Card>
 
-        <p v-if="addText">Slide texts will be generated by GPT.</p>
-        <p v-else>Slides will contain no text.</p>
+        <Card>
+          <template #title>Images</template>
+          <template #content>
+            <p>Do you want me to create background images?</p>
+            <div class="radio">
+              <RadioButton v-model="addImages" :value="true" name="add-images" />
+              <label for="add-text">Yes</label>
 
-        <h3>Length</h3>
+              <div class="slider">
+                <Slider
+                  :disabled="!addImages"
+                  data-testid="image-number-input"
+                  v-model.number="images"
+                  :min="1"
+                  :max="length"
+                  :step="1"
+                />
+                <span class="number">{{ images }}</span>
+              </div>
+            </div>
+            <div class="radio">
+              <RadioButton v-model="addImages" :value="false" name="add-images" />
+              <label for="add-text">No</label>
+            </div>
 
-        <p>How long you want it to be?</p>
+            <p>If you want to provide your own images, pick a folder below. They will be randomly selected.</p>
 
-        <div class="slider">
-          <span class="number">{{ length }}</span>
-          <Slider data-testid="slides-length-input" v-model.number="length" :min="3" :max="30" :step="1" />
-        </div>
+            <div>
+              <FolderPicker @update:folder="(folder: string) => (localImagePath = folder)" />
+            </div>
+          </template>
+          <template #footer>
+            <AiUsedMessage v-if="addImages" :num-ops="images" />
+          </template>
+        </Card>
 
-        <div class="checkbox">
-          <Checkbox v-model="withIntroAndOutro" binary input-id="add-intro-checkbox" />
-          <label for="add-intro-checkbox">with intro and outro</label>
-        </div>
+        <Card>
+          <template #title>Autoplay</template>
+          <template #content>
+            <p>How much time (in seconds) do you want to for each slide?</p>
+            <div class="slider">
+              <Slider data-testid="duration-input" v-model.number="duration" :min="5" :max="60" :step="1" />
+              <span class="number">{{ length }}</span>
+            </div>
+          </template>
+        </Card>
+      </div>
 
-        <p>How many seconds between slides (in seconds)?</p>
-        <div class="slider">
-          <span class="number">{{ length }}</span>
-          <Slider data-testid="duration-input" v-model.number="duration" :min="5" :max="60" :step="1" />
-        </div>
+      <ProgressBar
+        data-testid="generate-progress-bar"
+        v-if="isBusy"
+        :mode="progress ? 'determinate' : 'indeterminate'"
+        :value="progress"
+      />
 
-        <h3>Images</h3>
-
-        <p>How many images should the AI generate?</p>
-
-        <div class="slider">
-          <span class="number">{{ images }}</span>
-          <Slider data-testid="image-number-input" v-model.number="images" :min="0" :max="5" :step="1" />
-        </div>
-
-        <p v-if="imagesAreUserProvided">No AI images will be generated.</p>
-        <p v-else>DALL-E will provide some AI-generated images.</p>
-
-        <p>Do you want me to use a folder of other images for the rest?</p>
-
-        <div>
-          <FolderPicker @update:folder="(folder: string) => (localImagePath = folder)" />
-        </div>
-
-        <ProgressBar
-          data-testid="generate-progress-bar"
-          v-if="isBusy"
-          :mode="progress ? 'determinate' : 'indeterminate'"
-          :value="progress"
-        />
-
-        <Button
-          data-testid="generate-button"
-          :disabled="isBusy"
-          :loading="isBusy"
-          label="Generate"
-          icon="pi pi-search"
-          @click="generate"
-        />
-      </StackedLayout>
-    </main>
+      <Button
+        data-testid="generate-button"
+        :disabled="isBusy"
+        :loading="isBusy"
+        label="Generate"
+        icon="pi pi-search"
+        @click="generate"
+      />
+    </StackedLayout>
   </main>
 </template>
 
 <style scoped>
-.split {
+.card-deck {
   display: grid;
-  width: 100%;
-  height: 100%;
-  gap: 8px;
-  grid-template-columns: minmax(64px, 25%) 1fr;
-  align-items: stretch;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 
-div.robot {
-  background-image: url('/speaking_robot.jpg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+@media (max-width: 800px) {
+  .card-deck {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-div.slider {
-  display: grid;
-  align-items: center;
-  grid-template-columns: minmax(32px, 10%) 1fr;
-  gap: 8px;
+@media (max-width: 400px) {
+  .card-deck {
+    grid-template-columns: 1fr;
+  }
 }
 
-div.checkbox {
+.radio {
   display: flex;
   flex-direction: row;
+  gap: 8px;
+}
+
+.radio *:last-child {
+  flex-grow: 1;
+}
+
+.slider {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 1fr minmax(32px, 10%);
   gap: 8px;
 }
 
