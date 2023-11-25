@@ -128,7 +128,10 @@ const generate = () => {
 
       <div class="card-deck">
         <Card>
-          <template #title>Topic</template>
+          <template #title>
+            <span class="pi pi-file-edit" />
+            Topic
+          </template>
           <template #content>
             <p>
               Hi! I'm a wizard. I do presentations and stuff. What is the <strong>topic</strong> of your presentation?
@@ -145,7 +148,10 @@ const generate = () => {
         </Card>
 
         <Card>
-          <template #title>Length</template>
+          <template #title>
+            <span class="pi pi-list" />
+            Length
+          </template>
           <template #content>
             <p>How many slides should this presentation contain?</p>
 
@@ -168,7 +174,10 @@ const generate = () => {
         </Card>
 
         <Card>
-          <template #title>Text</template>
+          <template #title>
+            <span class="pi pi-file-word" />
+            Text
+          </template>
           <template #content>
             <p>Do you want me to create texts?</p>
             <div class="radio">
@@ -186,7 +195,10 @@ const generate = () => {
         </Card>
 
         <Card>
-          <template #title>Images</template>
+          <template #title>
+            <span class="pi pi-images" />
+            Images
+          </template>
           <template #content>
             <p>Do you want me to create background images?</p>
             <div class="radio">
@@ -222,7 +234,10 @@ const generate = () => {
         </Card>
 
         <Card>
-          <template #title>Autoplay</template>
+          <template #title>
+            <span class="pi pi-stopwatch" />
+            Autoplay
+          </template>
           <template #content>
             <p>How much time (in seconds) do you want to for each slide?</p>
             <div class="slider">
@@ -231,6 +246,8 @@ const generate = () => {
             </div>
           </template>
         </Card>
+
+        <Button data-testid="generate-button" :disabled="isBusy" :loading="isBusy" label="Generate" @click="generate" />
       </div>
 
       <ProgressBar
@@ -238,15 +255,6 @@ const generate = () => {
         v-if="isBusy"
         :mode="progress ? 'determinate' : 'indeterminate'"
         :value="progress"
-      />
-
-      <Button
-        data-testid="generate-button"
-        :disabled="isBusy"
-        :loading="isBusy"
-        label="Generate"
-        icon="pi pi-search"
-        @click="generate"
       />
     </StackedLayout>
   </main>
@@ -269,6 +277,10 @@ const generate = () => {
   .card-deck {
     grid-template-columns: 1fr;
   }
+}
+
+.p-card-title .pi {
+  color: var(--primary-color);
 }
 
 .radio {
