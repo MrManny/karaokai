@@ -1,7 +1,8 @@
 import { ipcRenderer } from 'electron';
+import type { Slide } from '../../types/slide-schema';
 
 export async function loadBackupImages(path: string, howMany: number): Promise<string[]> {
-  if (howMany <= 0) return [];
+  if (howMany <= 0 || !path) return [];
   return await ipcRenderer.invoke('pick-random-images', path, howMany);
 }
 
@@ -20,4 +21,12 @@ export function pickRandomNumbers(howMany: number, toExcl: number): number[] {
     picked.push(pickedValue);
   }
   return picked;
+}
+
+export function insertIntroAndOutro(topic: string, originalSlides: Slide[]): Slide[] {
+  return [
+    { layout: 'intro', text: { text: topic } },
+    ...originalSlides,
+    { layout: 'outro', text: { text: 'The End' } },
+  ];
 }

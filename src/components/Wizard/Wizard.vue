@@ -13,7 +13,7 @@ import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import { RouteNames } from '../../routes';
 import type { Slide } from '../../types/slide-schema';
 import FolderPicker from '../FolderPicker/FolderPicker.vue';
-import { loadBackupImages, pickRandomNumbers } from './Wizard.util';
+import { insertIntroAndOutro, loadBackupImages, pickRandomNumbers } from './Wizard.util';
 
 const presentation = usePresentation();
 const { push } = useRouter();
@@ -76,9 +76,7 @@ const generate = () => {
   const slidesWithAiImage = new Set<number>(Array.from(pickRandomNumbers(images.value, length.value)));
 
   op(async () => {
-    const backupImages = localImagePath.value
-      ? await loadBackupImages(localImagePath.value, length.value - images.value)
-      : [];
+    const backupImages = await loadBackupImages(localImagePath.value, length.value - images.value);
 
     if (!presentation.topic) {
       presentation.topic = await findTopic();
@@ -107,7 +105,11 @@ const generate = () => {
     }
     tasksTotal.value = promises.length;
     presentation.slides = await Promise.all(promises);
-    console.debug('Done generating');
+    if (withIntroAndOutro.value) {
+      presentation.slides = insertIntroAndOutro(presentation.topic, presentation.slides);
+    }
+
+    console.debug('Done generating', { slides: presentation.slides });
     void push({ name: RouteNames.Editor });
   });
 };
