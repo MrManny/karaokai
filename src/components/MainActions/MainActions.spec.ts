@@ -40,7 +40,7 @@ describe('MainActions', () => {
     await openMenu();
 
     // assert
-    expectMenuItemExists('Settings');
+    expectMenuItemExists('API keys');
   });
 
   it('has a button labeled "Load"', async () => {
