@@ -1,9 +1,13 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { indexHtml, preload, url } from '../paths';
 import './ipc-openai';
 import './ipc-vault';
 import './ipc-dialogs';
 import './ipc-presenter';
+
+ipcMain.on('quit', () => {
+  app.quit();
+});
 
 ipcMain.handle('open-win', (_, arg) => {
   const childWindow = new BrowserWindow({

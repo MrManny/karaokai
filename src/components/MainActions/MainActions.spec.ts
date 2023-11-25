@@ -65,7 +65,7 @@ describe('MainActions', () => {
     expectMenuItemExists('Save');
   });
 
-  it('has a button labeled "New (manual)"', async () => {
+  it('has a button labeled "New (Wizard)"', async () => {
     // arrange
     renderComponent(MainActions);
 
@@ -73,28 +73,28 @@ describe('MainActions', () => {
     await openMenu();
 
     // assert
-    expectMenuItemExists('New (manual)');
+    expectMenuItemExists('New (Wizard)');
   });
 
-  it('emits openEditor when "New" is clicked', async () => {
+  it('emits openEditor when "Editor" is clicked', async () => {
     // arrange
     const { emitted } = renderComponent(MainActions);
 
     // act
     await openMenu();
-    await fireEvent.click(screen.getByText('New (manual)'));
+    await fireEvent.click(screen.getByText('Editor'));
 
     // assert
     expect(emitted('openEditor')).toBeDefined();
   });
 
-  it('emits openSettings when "Settings" is clicked', async () => {
+  it('emits openSettings when "API keys" is clicked', async () => {
     // arrange
     const { emitted } = renderComponent(MainActions);
 
     // act
     await openMenu();
-    await fireEvent.click(screen.getByText('Settings'));
+    await fireEvent.click(screen.getByText('API keys'));
 
     // assert
     expect(emitted('openSettings')).toBeDefined();
@@ -122,5 +122,17 @@ describe('MainActions', () => {
 
     // assert
     expect(getSaveDialog()).toBeDefined();
+  });
+
+  it('quits the application when "Quit" is clicked', async () => {
+    // arrange
+    const { emitted } = renderComponent(MainActions);
+
+    // act
+    await openMenu();
+    await fireEvent.click(screen.getByText('Quit'));
+
+    // assert
+    expect(emitted('exit')).toBeDefined();
   });
 });
