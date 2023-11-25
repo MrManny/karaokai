@@ -3,7 +3,6 @@ import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import ProgressBar from 'primevue/progressbar';
-import Slider from 'primevue/slider';
 import StackedLayout from '../../layouts/StackedLayout.vue';
 import Message from 'primevue/message';
 import Card from 'primevue/card';
@@ -17,6 +16,7 @@ import type { Slide } from '../../types/slide-schema';
 import FolderPicker from '../FolderPicker/FolderPicker.vue';
 import { insertIntroAndOutro, loadBackupImages, pickRandomNumbers } from './Wizard.util';
 import AiUsedMessage from './AiUsedMessage.vue';
+import SliderWithLabel from '../SliderWithLabel/SliderWithLabel.vue';
 
 const presentation = usePresentation();
 const { push } = useRouter();
@@ -155,10 +155,7 @@ const generate = () => {
           <template #content>
             <p>How many slides should this presentation contain?</p>
 
-            <div class="slider">
-              <Slider data-testid="slides-length-input" v-model.number="length" :min="1" :max="30" :step="1" />
-              <span class="number">{{ length }}</span>
-            </div>
+            <SliderWithLabel data-testid="slides-length-input" v-model.number="length" :min="1" :max="30" />
 
             <p>Do you also want an intro and outro slide on top of that?</p>
 
@@ -205,17 +202,13 @@ const generate = () => {
               <RadioButton v-model="addImages" :value="true" name="add-images" />
               <label for="add-text">Yes</label>
 
-              <div class="slider">
-                <Slider
-                  :disabled="!addImages"
-                  data-testid="image-number-input"
-                  v-model.number="images"
-                  :min="1"
-                  :max="length"
-                  :step="1"
-                />
-                <span class="number">{{ images }}</span>
-              </div>
+              <SliderWithLabel
+                data-testid="image-number-input"
+                :min="1"
+                :max="length"
+                v-model="images"
+                :disabled="!addImages"
+              />
             </div>
             <div class="radio">
               <RadioButton v-model="addImages" :value="false" name="add-images" />
@@ -240,10 +233,7 @@ const generate = () => {
           </template>
           <template #content>
             <p>How much time (in seconds) do you want to for each slide?</p>
-            <div class="slider">
-              <Slider data-testid="duration-input" v-model.number="duration" :min="5" :max="60" :step="1" />
-              <span class="number">{{ length }}</span>
-            </div>
+            <SliderWithLabel data-testid="duration-input" :min="5" :max="60" v-model.number="duration" />
           </template>
         </Card>
 
@@ -267,6 +257,11 @@ const generate = () => {
   gap: 16px;
 }
 
+.p-card-title .pi {
+  color: var(--primary-color);
+  margin-right: 8px;
+}
+
 @media (max-width: 800px) {
   .card-deck {
     grid-template-columns: repeat(2, 1fr);
@@ -277,30 +272,20 @@ const generate = () => {
   .card-deck {
     grid-template-columns: 1fr;
   }
-}
 
-.p-card-title .pi {
-  color: var(--primary-color);
+  .p-card-title .pi {
+    margin-right: 4px;
+  }
 }
 
 .radio {
   display: flex;
   flex-direction: row;
   gap: 8px;
+  padding-bottom: 4px;
 }
 
 .radio *:last-child {
   flex-grow: 1;
-}
-
-.slider {
-  display: grid;
-  align-items: center;
-  grid-template-columns: 1fr minmax(32px, 10%);
-  gap: 8px;
-}
-
-.number {
-  text-align: right;
 }
 </style>
