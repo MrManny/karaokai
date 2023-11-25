@@ -4,6 +4,7 @@ import { usePresentation } from '../../stores/presentation';
 import { useTimer } from '../useTimer/useTimer';
 import { nextTick, reactive } from 'vue';
 import type { Slide } from '../../types/slide-schema';
+import { ipcRenderer } from 'electron';
 
 vi.mock('../../stores/presentation', () => ({
   usePresentation: vi.fn(),
@@ -11,6 +12,12 @@ vi.mock('../../stores/presentation', () => ({
 
 vi.mock('../useTimer/useTimer', () => ({
   useTimer: vi.fn(),
+}));
+
+vi.mock('electron', () => ({
+  ipcRenderer: {
+    invoke: vi.fn(),
+  },
 }));
 
 describe('usePresenter', () => {
@@ -103,5 +110,13 @@ describe('usePresenter', () => {
     await nextTick();
 
     expect(presenter.activeSlideIndex.value).toEqual(2);
+  });
+
+  it('can go fullscreen', () => {
+    const { setFullscreen } = usePresenter({});
+
+    setFullscreen();
+
+    expect(ipcRenderer.invoke).toHaveBeenCalledWith('set-fullscreen', true);
   });
 });
