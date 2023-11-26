@@ -16,6 +16,6 @@ export default defineConfig({
       statements: 60,
       functions: 60,
     },
-    environment: 'jsdom',
+    environment: 'happy-dom',
   },
 });

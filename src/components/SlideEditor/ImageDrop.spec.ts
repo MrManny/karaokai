@@ -22,7 +22,7 @@ describe('Image Drop', () => {
     renderComponent(ImageDrop, { previewImage: 'data:image/png;base64,test' });
 
     const dropZone = getImageDropZone();
-    expect(dropZone.style.backgroundImage).toEqual('url(data:image/png;base64,test)');
+    expect(dropZone.style.backgroundImage).toEqual('url("data:image/png;base64,test")');
   });
 
   it('becomes "hot" when a PNG is dragged over', async () => {

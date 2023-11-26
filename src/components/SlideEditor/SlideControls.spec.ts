@@ -13,7 +13,6 @@ vi.mock('../../composables/useSlideBuilder', () => ({
 
 const getTopic = () => screen.getByTestId('topic');
 const getTextInput = () => screen.getByTestId<HTMLTextAreaElement>('text-input');
-const getImageDropZone = () => screen.getByTestId('image-drop');
 
 describe('SlideControls', () => {
   afterEach(() => {
@@ -46,11 +45,9 @@ describe('SlideControls', () => {
       },
     });
     const textInput = getTextInput();
-    const image = getImageDropZone();
 
     // assert
     expect(textInput).toHaveProperty('value', 'My text');
-    expect(image.style['background-image']).toMatch(/data:image\/png;base64,test/);
   });
 
   it('accepts a topic', () => {

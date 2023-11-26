@@ -41,7 +41,7 @@
     "eslint-config-prettier": "9.0.0",
     "eslint-plugin-prettier": "5.0.1",
     "eslint-plugin-vue": "9.18.1",
-    "jsdom": "22.1.0",
+    "happy-dom": "12.10.3",
     "pinia": "2.1.7",
     "prettier": "3.1.0",
     "primeicons": "6.0.1",
