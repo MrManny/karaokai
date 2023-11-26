@@ -33,7 +33,7 @@ const props = defineProps({
 const emit = defineEmits(['update:slide', 'remove']);
 const imagePreview = computed(() => props.slide.image?.base64 ?? '');
 
-const updatePartial = <T extends keyof Slide>(key: T, update: Partial<Slide[T]>) => {
+const updatePartial = <T extends 'text' | 'image'>(key: T, update: Partial<Slide[T]>) => {
   const oldValue: Slide[T] = props.slide[key];
   const updatedValue: Slide[T] = { ...oldValue, ...update };
   const updatedSlide = { ...props.slide, [key]: updatedValue };
