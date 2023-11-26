@@ -1,15 +1,28 @@
 # KaraokAI
 
-KaraokAI is an AI-assisted PowerPoint Karaoke generator.
+Welcome to KaraokAI – Your Ultimate PowerPoint Karaoke Companion!
 
-Features:
-  - Creates textual content for your slides with **GPT-3.5**.
-  - Uses **Stable Diffusion XL** to generate images for your slides.
-  - Edit and present slides from right within the application.
+## Why KaraokAI?
 
-Coming soon:
-  - Fully auto-generated slides for that sweet, sweet one-button experience.
-  - User interface that doesn't make UI/UX designers sad.
+Ever found yourself fumbling through a PowerPoint presentation, wishing it was more fun?
+Say hello to KaraokAI, where the art of impromptu speaking meets the hilarity of randomness, powered by the magic of ChatGPT and DALL-E!
+
+## Features
+
+- **Randomized Slides:**
+  Get ready for a wild ride! Our app generates the most unexpected, bizarre, and absolutely hilarious slides, ensuring no two presentations are ever the same.
+- **ChatGPT Integration:**
+  Need some quick witty text for your slides?
+  ChatGPT is at your service, spinning words faster than a rapper on double espresso.
+- **DALL-E's Artistry:**
+  Who needs stock photos when you have DALL-E?
+  Get custom images that are as unique as your presentation style – from flying pigs to dancing robots!
+  (Flying dancing pig robots are also possible. Don't ask me how I know.)
+- **Plan B:**
+  You ran out of your OpenAI budget already?
+  You probably partied too hard and long last night with KaraokAI.
+  No worries, you can still create stuff.
+  I am just afraid you might have to use your.. *gasp..* imagination!
 
 ## Installation
 
