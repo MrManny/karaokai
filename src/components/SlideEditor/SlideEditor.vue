@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { usePresentation } from '../../stores/presentation';
-import Button from 'primevue/button';
 import type { Slide } from '../../types/slide-schema';
 import SlideControls from './SlideControls.vue';
 import SlideViewer from '../SlideViewer/SlideViewer.vue';
 import { topic } from '../../composables/useSlideBuilder/prompts';
-import { WellKnownKeys } from '../../composables/useKeyDown';
 import { usePresenter } from '../../composables/usePresenter';
 import TopicInput from './TopicInput.vue';
+import SlidePagination from './SlidePagination.vue';
 
 const emit = defineEmits(['play']);
 const props = defineProps({
@@ -18,20 +17,7 @@ const props = defineProps({
 });
 
 const presentation = usePresentation();
-const { activeSlideIndex, activeSlide, canGoBack, canGoForward, goBack, goForward } = usePresenter({});
-
-const moveThroughSlides = (ev: KeyboardEvent) => {
-  switch (ev.key) {
-    case WellKnownKeys.ArrowLeft:
-      ev.preventDefault();
-      goBack();
-      break;
-    case WellKnownKeys.ArrowRight:
-      ev.preventDefault();
-      goForward();
-      break;
-  }
-};
+const { activeSlideIndex, activeSlide, canGoBack, canGoForward, goBack, goForward, goTo } = usePresenter({});
 
 const insertEmptySlide = () => {
   const at = presentation.slideCount;
@@ -39,6 +25,16 @@ const insertEmptySlide = () => {
 
   if (activeSlideIndex.value !== -1) return;
   activeSlideIndex.value = at;
+};
+
+const removeSlide = () => {
+  const at = activeSlideIndex.value;
+  presentation.remove(at);
+  if (activeSlideIndex.value > 0) {
+    goTo(activeSlideIndex.value - 1);
+  } else if (presentation.slideCount === 0) {
+    goTo(-1);
+  }
 };
 
 const updateSlide = (at: number, newSlide: Slide) => {
@@ -71,43 +67,23 @@ const playPresentation = () => {
         :slide="activeSlide"
         :topic="presentation.topic"
         @update:slide="(newSlide: Slide) => updateSlide(activeSlideIndex, newSlide)"
+        @remove="() => removeSlide()"
       />
     </div>
 
-    <div class="slide-deck" @keydown="(ev) => moveThroughSlides(ev)">
-      <Button
-        :disabled="!canGoBack"
-        label="Previous"
-        @click="goBack"
-        class="nav"
-        icon="pi pi-arrow-left"
-        icon-pos="left"
-      />
-
-      <div class="paginator">
-        <Button
-          v-for="(_, index) of presentation.slides"
-          :data-testid="`slide-${index}-button`"
-          :key="index"
-          :label="`#${index + 1}`"
-          :outlined="activeSlideIndex === index"
-          @click="() => (activeSlideIndex = index)"
-        />
-      </div>
-
-      <Button label="New" @click="() => insertEmptySlide()" class="nav" icon="pi pi-plus" />
-
-      <Button
-        :disabled="!canGoForward"
-        label="Next"
-        @click="goForward"
-        class="nav"
-        icon="pi pi-arrow-right"
-        icon-pos="right"
-      />
-
-      <Button :disabled="disabled" label="Play" @click="playPresentation" class="nav" />
-    </div>
+    <SlidePagination
+      class="slide-deck"
+      :disabled="disabled"
+      :slides="presentation.slideCount"
+      :can-go-back="canGoBack"
+      :can-go-forward="canGoForward"
+      :active-slide-index="activeSlideIndex"
+      @play="playPresentation"
+      @new="insertEmptySlide"
+      @go-to="(slide: number) => (activeSlideIndex = slide)"
+      @go-back="goBack"
+      @go-forward="goForward"
+    />
   </div>
 </template>
 
@@ -132,21 +108,6 @@ const playPresentation = () => {
 
 .slide-deck {
   grid-area: SlideDeck;
-  display: grid;
-  gap: 8px;
-  grid-template-columns: 80px 1fr repeat(3, 80px);
-}
-
-.slide-deck .paginator {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  gap: 4px;
-  overflow-x: auto;
-}
-
-.slide-deck .paginator > * {
-  min-width: 64px;
 }
 
 .preview {

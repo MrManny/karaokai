@@ -16,13 +16,18 @@ const standalone = computed(() => props.slide.layout === 'intro' || props.slide.
 </script>
 
 <template>
-  <div class="viewer">
-    <StandaloneLayout v-if="standalone" :text="slide.text?.text ?? 'Karaokai'" is-heading />
-    <SplitLayout v-else :text="slide.text?.text ?? ''" :image="slide.image?.base64 ?? ''" />
+  <div class="viewer full">
+    <StandaloneLayout v-if="standalone" class="full" :text="slide.text?.text ?? 'Karaokai'" is-heading />
+    <SplitLayout v-else class="full" :text="slide.text?.text ?? ''" :image="slide.image?.base64 ?? ''" />
   </div>
 </template>
 
 <style scoped>
+.full {
+  width: 100%;
+  height: 100%;
+}
+
 .viewer {
   width: 100%;
   height: 100%;

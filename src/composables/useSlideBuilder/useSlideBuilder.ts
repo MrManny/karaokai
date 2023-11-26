@@ -1,9 +1,14 @@
 import type { Message } from '../useOpenAi';
 import { useOpenAi } from '../useOpenAi';
-import { fallbackPrompt, drawImage, instructions, topic } from './prompts';
+import { drawImage, fallbackPrompt, instructions, topic } from './prompts';
+import { TokenName, useVault } from '../useVault';
+import { computed } from 'vue';
 
 export function useSlideBuilder() {
   const { ask, draw } = useOpenAi();
+  const { has } = useVault();
+
+  const isAvailable = computed(async () => await has(TokenName.OpenAi));
 
   function systemMessage(content: string): Message & { role: 'system' } {
     return {
@@ -53,5 +58,6 @@ export function useSlideBuilder() {
     findTopic,
     generateText,
     generateImage,
+    isOpenaiAvailable: isAvailable,
   };
 }

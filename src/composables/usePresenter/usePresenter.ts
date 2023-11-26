@@ -1,6 +1,7 @@
 import { usePresentation } from '../../stores/presentation';
 import { computed, ref } from 'vue';
 import { useTimer } from '../useTimer/useTimer';
+import { ipcRenderer } from 'electron';
 
 interface PresenterOptions {
   onTick?: () => void;
@@ -26,6 +27,10 @@ export function usePresenter({ onTick, onTickDue }: PresenterOptions) {
     activeSlideIndex.value++;
   };
 
+  const goTo = (slideNo: number) => {
+    activeSlideIndex.value = slideNo;
+  };
+
   const { start, stop } = useTimer({
     timePerTick: presentation.timer?.timePerTick ?? 10_000,
     onTick: () => {
@@ -43,6 +48,10 @@ export function usePresenter({ onTick, onTickDue }: PresenterOptions) {
     },
   });
 
+  const setFullscreen = (fullScreen = true) => {
+    void ipcRenderer.invoke('set-fullscreen', fullScreen);
+  };
+
   return {
     activeSlide,
     activeSlideIndex,
@@ -50,6 +59,8 @@ export function usePresenter({ onTick, onTickDue }: PresenterOptions) {
     canGoForward,
     goBack,
     goForward,
+    goTo,
+    setFullscreen,
     start,
     stop,
     totalSlides,

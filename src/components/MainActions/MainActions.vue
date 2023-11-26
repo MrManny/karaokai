@@ -9,7 +9,7 @@ import SaveDialog from '../SaveDialog/SaveDialog.vue';
 import { useRouter } from 'vue-router';
 import { RouteNames } from '../../routes';
 
-const emit = defineEmits(['openEditor', 'openSettings', 'openWizard']);
+const emit = defineEmits(['exit', 'openEditor', 'openSettings', 'openWizard']);
 const router = useRouter();
 const isLoadVisible = ref<boolean>(false);
 const isSaveVisible = ref<boolean>(false);
@@ -31,11 +31,28 @@ const onLoaded = () => {
 
 const menu = ref();
 const items: MenuItem[] = [
-  { label: 'New (auto)', icon: 'pi pi-fw pi-plus', command: () => emit('openWizard') },
-  { label: 'New (manual)', icon: 'pi pi-fw pi-plus', command: () => emit('openEditor') },
-  { label: 'Load', icon: 'pi pi-fw pi-download', command: () => showLoadDialog() },
-  { label: 'Save', icon: 'pi pi-fw pi-upload', command: () => showSaveDialog() },
-  { label: 'Settings', icon: 'pi pi-fw pi-wrench', command: () => emit('openSettings') },
+  {
+    label: 'New',
+    items: [
+      { label: 'New (Wizard)', icon: 'pi pi-fw pi-plus', command: () => emit('openWizard') },
+      { label: 'Editor', icon: 'pi pi-fw pi-plus', command: () => emit('openEditor') },
+    ],
+  },
+  {
+    label: 'File',
+    items: [
+      { label: 'Load', icon: 'pi pi-fw pi-download', command: () => showLoadDialog() },
+      { label: 'Save', icon: 'pi pi-fw pi-upload', command: () => showSaveDialog() },
+    ],
+  },
+  {
+    label: 'Settings',
+    items: [{ label: 'API keys', icon: 'pi pi-fw pi-wrench', command: () => emit('openSettings') }],
+  },
+  {
+    label: 'Stuff',
+    items: [{ label: 'Quit', icon: 'pi pi-fw pi-times', command: () => emit('exit') }],
+  },
 ];
 
 const toggle = (ev: Event) => {

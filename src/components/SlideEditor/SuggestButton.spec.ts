@@ -5,7 +5,6 @@ import SuggestButton from './SuggestButton.vue';
 
 const getToggleButton = () => screen.getByTestId('suggest-toggle');
 const getPromptInput = () => screen.queryByTestId('prompt-input');
-const getNegativeInput = () => screen.queryByTestId('negative-input');
 const getCancelButton = () => screen.queryByTestId('cancel-button');
 const getAcceptButton = () => screen.queryByTestId('accept-button');
 const getAutomateButton = () => screen.queryByTestId('automate-button');
@@ -15,7 +14,6 @@ const clickAccept = async () => await fireEvent.click(getAcceptButton());
 const clickCancel = async () => await fireEvent.click(getCancelButton());
 const clickAutomate = async () => await fireEvent.click(getAutomateButton());
 const enterPrompt = async (prompt: string) => await fireEvent.update(getPromptInput(), prompt);
-const enterNegative = async (negative: string) => await fireEvent.update(getNegativeInput(), negative);
 
 describe('SuggestButton', () => {
   afterEach(() => {
@@ -29,24 +27,15 @@ describe('SuggestButton', () => {
     expect(getToggleButton().getAttribute('disabled')).toBeDefined();
   });
 
-  it('can be opened, with no negative input by default', async () => {
+  it('can be opened', async () => {
     renderComponent(SuggestButton);
 
     await clickToggleButton();
 
     expect(getPromptInput()).toBeDefined();
-    expect(getNegativeInput()).toBeNull();
   });
 
-  it('can have an optional negative input', async () => {
-    renderComponent(SuggestButton, { withNegative: true });
-
-    await clickToggleButton();
-
-    expect(getNegativeInput()).toBeDefined();
-  });
-
-  it('can forwards accepted input', async () => {
+  it('can forward accepted input', async () => {
     const prompt = "It really whips the llama's ass";
     const { emitted } = renderComponent(SuggestButton);
 
@@ -54,20 +43,7 @@ describe('SuggestButton', () => {
     await enterPrompt(prompt);
     await clickAccept();
 
-    expect(emitted('suggest')).toMatchObject([[prompt, '']]);
-  });
-
-  it('can forwards accepted input with negatives', async () => {
-    const prompt = "It really whips the llama's ass";
-    const negative = 'Kidnappster';
-    const { emitted } = renderComponent(SuggestButton, { withNegative: true });
-
-    await clickToggleButton();
-    await enterPrompt(prompt);
-    await enterNegative(negative);
-    await clickAccept();
-
-    expect(emitted('suggest')).toMatchObject([[prompt, negative]]);
+    expect(emitted('suggest')).toMatchObject([[prompt]]);
   });
 
   it('can cancel', async () => {

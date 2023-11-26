@@ -12,8 +12,7 @@ vi.mock('../../composables/useSlideBuilder', () => ({
 }));
 
 const getTopic = () => screen.getByTestId('topic');
-const getTextInput = () => screen.getByTestId('text-input');
-const getImageDropZone = () => screen.getByTestId('image-drop');
+const getTextInput = () => screen.getByTestId<HTMLTextAreaElement>('text-input');
 
 describe('SlideControls', () => {
   afterEach(() => {
@@ -46,11 +45,9 @@ describe('SlideControls', () => {
       },
     });
     const textInput = getTextInput();
-    const image = getImageDropZone();
 
     // assert
     expect(textInput).toHaveProperty('value', 'My text');
-    expect(image.style['background-image']).toMatch(/data:image\/png;base64,test/);
   });
 
   it('accepts a topic', () => {
@@ -58,7 +55,7 @@ describe('SlideControls', () => {
       topic: 'My awesome topic',
     });
 
-    expect(getTopic().getAttribute('data-topic')).toEqual('My awesome topic');
+    expect(getTopic().textContent).toEqual('My awesome topic');
   });
 
   it('emits an event when the slide text changed', () => {

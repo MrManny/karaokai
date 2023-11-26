@@ -16,6 +16,7 @@ const getNextButton = (): HTMLButtonElement => screen.getByLabelText('Next');
 const getNewSlideButton = (): HTMLButtonElement => screen.getByLabelText('New');
 const getPlayButton = (): HTMLButtonElement => screen.getByLabelText('Play');
 
+// TODO: became integration testy after refactoring
 describe('SlideEditor', () => {
   beforeEach(() => {
     setActivePinia(createPinia());

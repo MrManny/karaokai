@@ -31,5 +31,10 @@ export const usePresentation = defineStore('presentation', {
       newSlides.splice(at, 1, newSlide);
       this.slides = newSlides;
     },
+    remove(at: number) {
+      const newSlides = [...this.slides];
+      newSlides.splice(at, 1);
+      this.slides = newSlides;
+    },
   },
 });

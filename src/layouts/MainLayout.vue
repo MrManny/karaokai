@@ -3,8 +3,10 @@ import Brand from '../components/Brand/Brand.vue';
 import MainActions from '../components/MainActions/MainActions.vue';
 import { RouteNames } from '../routes';
 import { useRouter } from 'vue-router';
+import { useElectron } from '../composables/useElectron/useElectron';
 
 const { push } = useRouter();
+const { quit } = useElectron();
 
 const goTo = (place: RouteNames) => {
   void push({ name: place });
@@ -20,6 +22,7 @@ const goTo = (place: RouteNames) => {
         @openEditor="goTo(RouteNames.Editor)"
         @openSettings="goTo(RouteNames.Vault)"
         @openWizard="goTo(RouteNames.Wizard)"
+        @exit="() => quit()"
       />
     </div>
     <div>

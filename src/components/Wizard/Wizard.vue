@@ -3,10 +3,11 @@ import { usePresentation } from '../../stores/presentation';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import ProgressBar from 'primevue/progressbar';
-import Slider from 'primevue/slider';
 import StackedLayout from '../../layouts/StackedLayout.vue';
-import Checkbox from 'primevue/checkbox';
-import { computed, ref, watch } from 'vue';
+import Message from 'primevue/message';
+import Card from 'primevue/card';
+import RadioButton from 'primevue/radiobutton';
+import { computed, reactive, ref } from 'vue';
 import { useBusy } from '../../composables/useBusy';
 import { useRouter } from 'vue-router';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
@@ -14,32 +15,45 @@ import { RouteNames } from '../../routes';
 import type { Slide } from '../../types/slide-schema';
 import FolderPicker from '../FolderPicker/FolderPicker.vue';
 import { insertIntroAndOutro, loadBackupImages, pickRandomNumbers } from './Wizard.util';
+import AiUseMessage from '../AiUseMessage/AiUseMessage.vue';
+import SliderWithLabel from '../SliderWithLabel/SliderWithLabel.vue';
+import useVuelidate from '@vuelidate/core';
+import { between, required } from '@vuelidate/validators';
+import SuggestButton from '../SlideEditor/SuggestButton.vue';
 
 const presentation = usePresentation();
 const { push } = useRouter();
-const { findTopic, generateImage, generateText } = useSlideBuilder();
+const { findTopic, generateImage, generateText, isOpenaiAvailable } = useSlideBuilder();
 const { op, isBusy } = useBusy();
-const length = ref<number>(5);
-const images = ref<number>(0);
-const duration = ref<number>(15);
-const addText = ref<boolean>(true);
-const localImagePath = ref<string>('');
+
+const requiresAi = (value: unknown) => isOpenaiAvailable.value || !value;
+const state = reactive({
+  topic: '',
+  length: 15,
+  images: 1,
+  addText: true,
+  addImages: false,
+  addIntro: true,
+  duration: 15,
+  localImagePath: '',
+});
+const rules = {
+  topic: { required },
+  length: { between: between(1, 30) },
+  images: { between: between(0, state.length) },
+  duration: { between: between(0, 60) },
+  addText: { requiresAi },
+  addImages: { requiresAi },
+};
+const v$ = useVuelidate(rules, state);
+
 const tasksDone = ref<number>(0);
 const tasksTotal = ref<number>(0);
-const withIntroAndOutro = ref<boolean>(true);
 
 const progress = computed<number>(() => {
   if (tasksTotal.value <= 0) return 0;
   const percentage = tasksDone.value / tasksTotal.value;
   return Math.round(percentage * 100);
-});
-const topicIsUserProvided = computed<boolean>(() => !!presentation.topic);
-const imagesAreUserProvided = computed<boolean>(() => images.value === 0);
-
-watch(duration, (value: number) => {
-  presentation.timer = {
-    timePerTick: value * 1000,
-  };
 });
 
 interface GenerationOptions {
@@ -47,6 +61,22 @@ interface GenerationOptions {
   slideNo: number;
   withImage: boolean;
   withText: boolean;
+}
+
+async function suggestTopic() {
+  await op(async () => {
+    state.topic = await findTopic();
+    v$.value.topic.$touch();
+  });
+}
+
+function promoteSlides(settings: typeof state, slides: Slide[]) {
+  presentation.topic = settings.topic;
+  presentation.slides = slides;
+  if (!settings.duration) return;
+  presentation.timer = {
+    timePerTick: settings.duration * 1000,
+  };
 }
 
 async function generateSlide({ topic, slideNo, withImage, withText }: GenerationOptions): Promise<Slide> {
@@ -73,23 +103,20 @@ const generate = () => {
   tasksDone.value = 0;
   tasksTotal.value = 0;
 
-  const slidesWithAiImage = new Set<number>(Array.from(pickRandomNumbers(images.value, length.value)));
-
   op(async () => {
-    const backupImages = await loadBackupImages(localImagePath.value, length.value - images.value);
+    if (!(await v$.value.$validate())) return;
 
-    if (!presentation.topic) {
-      presentation.topic = await findTopic();
-    }
+    const slidesWithAiImage = new Set<number>(Array.from(pickRandomNumbers(state.images, state.length)));
+    const backupImages = await loadBackupImages(state.localImagePath, state.length - state.images);
     console.debug('Generating slides');
 
     const promises: Promise<Slide>[] = [];
-    for (let i = 0; i < length.value; i++) {
+    for (let i = 0; i < state.length; i++) {
       const withAiImage = slidesWithAiImage.has(i);
       const slideGeneration = generateSlide({
-        topic: presentation.topic,
+        topic: state.topic,
         slideNo: i + 1,
-        withText: addText.value,
+        withText: state.addText,
         withImage: withAiImage,
       }).then((slide) => {
         tasksDone.value++;
@@ -104,136 +131,238 @@ const generate = () => {
       promises.push(slideGeneration);
     }
     tasksTotal.value = promises.length;
-    presentation.slides = await Promise.all(promises);
-    if (withIntroAndOutro.value) {
-      presentation.slides = insertIntroAndOutro(presentation.topic, presentation.slides);
+    let slides = await Promise.all(promises);
+    if (state.addIntro) {
+      slides = insertIntroAndOutro(presentation.topic, presentation.slides);
     }
+    promoteSlides(state, slides);
 
-    console.debug('Done generating', { slides: presentation.slides });
     void push({ name: RouteNames.Editor });
   });
 };
 </script>
 
 <template>
-  <main class="split">
-    <div class="robot" />
+  <main>
+    <StackedLayout>
+      <Message v-if="!isOpenaiAvailable" severity="warn" :closable="false">
+        <div>OpenAI credentials have not been configured. AI operations are unavailable.</div>
+        <div>Configure your OpenAI credentials in the settings here:</div>
+        <Button label="Configure OpenAI" severity="warning" @click="$router.push({ name: RouteNames.Vault })" />
+      </Message>
 
-    <main>
-      <StackedLayout>
-        <h2>Wizard</h2>
+      <div class="card-deck">
+        <Card>
+          <template #title>
+            <span class="pi pi-file-edit" />
+            Topic
+          </template>
+          <template #subtitle> What is the topic of your presentation? </template>
+          <template #content>
+            <div class="topic-picker">
+              <InputText
+                data-testid="topic-input"
+                v-model.trim="state.topic"
+                placeholder="Topic"
+                required
+                @blur="v$.topic.$touch"
+              />
 
-        <h3>Topic</h3>
+              <SuggestButton :disabled="isBusy" :loading="isBusy" @suggest="suggestTopic" />
+            </div>
+          </template>
+          <template #footer>
+            <Message v-if="v$.topic.$error" severity="error" :closable="false">
+              Please don't forget to set a topic
+            </Message>
+          </template>
+        </Card>
 
-        <p>
-          Hi! I'm a wizard. I do presentations and stuff. What is the <strong>topic</strong> of your presentation? Feel
-          free to leave it blank, then I'll just come up with something for you.
-        </p>
+        <Card>
+          <template #title>
+            <span class="pi pi-list" />
+            Length
+          </template>
+          <template #subtitle> How many slides should this presentation contain? </template>
+          <template #content>
+            <SliderWithLabel
+              data-testid="slides-length-input"
+              v-model.number="state.length"
+              :min="1"
+              :max="30"
+              @blur="v$.length.$touch"
+            />
 
-        <InputText data-testid="topic-input" v-model.trim="presentation.topic" placeholder="Topic" />
+            <p>Do you also want an intro and outro slide on top of that?</p>
 
-        <p v-if="topicIsUserProvided">A topic has been provided. GPT will not be tasked.</p>
-        <p v-else>A topic has not been provided. GPT will find you one.</p>
+            <div class="radio">
+              <RadioButton v-model="state.addIntro" :value="true" name="add-intro" />
+              <label for="add-text">Yes</label>
+            </div>
+            <div class="radio">
+              <RadioButton v-model="state.addIntro" :value="false" name="add-intro" />
+              <label for="add-text">No</label>
+            </div>
+          </template>
+          <template #footer>
+            <Message v-if="v$.length.$error" severity="error" :closable="false">
+              Please double-check the length of your presentation
+            </Message>
+          </template>
+        </Card>
 
-        <h3>Images</h3>
+        <Card>
+          <template #title>
+            <span class="pi pi-file-word" />
+            Text
+          </template>
+          <template #subtitle> Do you want me to create texts? </template>
+          <template #content>
+            <div class="radio">
+              <RadioButton v-model="state.addText" :value="true" name="add-text" @blur="v$.addText.$touch" />
+              <label for="add-text">Yes</label>
+            </div>
+            <div class="radio">
+              <RadioButton v-model="state.addText" :value="false" name="add-text" @blur="v$.addText.$touch" />
+              <label for="add-text">No</label>
+            </div>
+          </template>
+          <template #footer>
+            <Message v-if="v$.addText.$error" severity="error" :closable="false">
+              Use of this function requires a configured OpenAI token
+            </Message>
 
-        <div class="checkbox">
-          <Checkbox v-model="addText" binary input-id="add-text-checkbox" />
-          <label for="add-text-checkbox">Generate texts</label>
-        </div>
+            <AiUseMessage v-else-if="state.addText" :num-ops="state.length" />
+          </template>
+        </Card>
 
-        <p v-if="addText">Slide texts will be generated by GPT.</p>
-        <p v-else>Slides will contain no text.</p>
+        <Card>
+          <template #title>
+            <span class="pi pi-images" />
+            Images
+          </template>
+          <template #subtitle> Do you want me to create background images? </template>
+          <template #content>
+            <div class="radio">
+              <RadioButton v-model="state.addImages" :value="true" name="add-images" @blur="v$.addImages.$touch" />
+              <label for="add-text">Yes</label>
 
-        <h3>Length</h3>
+              <SliderWithLabel
+                data-testid="image-number-input"
+                :min="1"
+                :max="state.length"
+                v-model="state.images"
+                :disabled="!state.addImages"
+                @blur="v$.images.$touch"
+              />
+            </div>
+            <div class="radio">
+              <RadioButton v-model="state.addImages" :value="false" name="add-images" @blur="v$.addImages.$touch" />
+              <label for="add-text">No</label>
+            </div>
 
-        <p>How long you want it to be?</p>
+            <p>If you want to provide your own images, pick a folder below. They will be randomly selected.</p>
 
-        <div class="slider">
-          <span class="number">{{ length }}</span>
-          <Slider data-testid="slides-length-input" v-model.number="length" :min="3" :max="30" :step="1" />
-        </div>
+            <div>
+              <FolderPicker @update:folder="(folder: string) => (state.localImagePath = folder)" />
+            </div>
+          </template>
+          <template #footer>
+            <Message v-if="v$.addImages.$error" severity="error" :closable="false">
+              Use of this function requires a configured OpenAI token
+            </Message>
 
-        <div class="checkbox">
-          <Checkbox v-model="withIntroAndOutro" binary input-id="add-intro-checkbox" />
-          <label for="add-intro-checkbox">with intro and outro</label>
-        </div>
+            <AiUseMessage v-else-if="state.addImages" :num-ops="state.images" />
+          </template>
+        </Card>
 
-        <p>How many seconds between slides (in seconds)?</p>
-        <div class="slider">
-          <span class="number">{{ length }}</span>
-          <Slider data-testid="duration-input" v-model.number="duration" :min="5" :max="60" :step="1" />
-        </div>
-
-        <h3>Images</h3>
-
-        <p>How many images should the AI generate?</p>
-
-        <div class="slider">
-          <span class="number">{{ images }}</span>
-          <Slider data-testid="image-number-input" v-model.number="images" :min="0" :max="5" :step="1" />
-        </div>
-
-        <p v-if="imagesAreUserProvided">No AI images will be generated.</p>
-        <p v-else>DALL-E will provide some AI-generated images.</p>
-
-        <p>Do you want me to use a folder of other images for the rest?</p>
-
-        <div>
-          <FolderPicker @update:folder="(folder: string) => (localImagePath = folder)" />
-        </div>
-
-        <ProgressBar
-          data-testid="generate-progress-bar"
-          v-if="isBusy"
-          :mode="progress ? 'determinate' : 'indeterminate'"
-          :value="progress"
-        />
+        <Card>
+          <template #title>
+            <span class="pi pi-stopwatch" />
+            Autoplay
+          </template>
+          <template #subtitle> How much time (in seconds) do you want to for each slide? </template>
+          <template #content>
+            <SliderWithLabel
+              data-testid="duration-input"
+              :min="0"
+              :max="60"
+              v-model.number="state.duration"
+              @blur="v$.duration.$touch"
+            />
+          </template>
+          <template #footer>
+            <Message v-if="v$.duration.$error" severity="error" :closable="false">
+              The duration seems off. Can you double-check please?
+            </Message>
+          </template>
+        </Card>
 
         <Button
           data-testid="generate-button"
-          :disabled="isBusy"
+          :disabled="isBusy || v$.$error"
           :loading="isBusy"
           label="Generate"
-          icon="pi pi-search"
           @click="generate"
         />
-      </StackedLayout>
-    </main>
+      </div>
+
+      <ProgressBar
+        data-testid="generate-progress-bar"
+        v-if="isBusy"
+        :mode="progress ? 'determinate' : 'indeterminate'"
+        :value="progress"
+      />
+    </StackedLayout>
   </main>
 </template>
 
 <style scoped>
-.split {
+.card-deck {
   display: grid;
-  width: 100%;
-  height: 100%;
-  gap: 8px;
-  grid-template-columns: minmax(64px, 25%) 1fr;
-  align-items: stretch;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 
-div.robot {
-  background-image: url('/speaking_robot.jpg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: cover;
+.p-card-title .pi {
+  color: var(--primary-color);
+  margin-right: 8px;
 }
 
-div.slider {
+@media (max-width: 800px) {
+  .card-deck {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .card-deck {
+    grid-template-columns: 1fr;
+  }
+
+  .p-card-title .pi {
+    margin-right: 4px;
+  }
+}
+
+.topic-picker {
   display: grid;
-  align-items: center;
-  grid-template-columns: minmax(32px, 10%) 1fr;
   gap: 8px;
+  grid-template-columns: 1fr auto;
 }
 
-div.checkbox {
+.radio {
   display: flex;
   flex-direction: row;
   gap: 8px;
+  padding-bottom: 4px;
 }
 
-.number {
-  text-align: right;
+.radio *:last-child {
+  flex-grow: 1;
+}
+
+.p-card:focus-within {
+  background-color: var(--surface-50);
 }
 </style>

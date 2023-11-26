@@ -21,8 +21,8 @@ async function createWindow() {
   win = new BrowserWindow({
     title: 'KaraokAI',
     icon: join(process.env.PUBLIC, 'icon.png'),
-    minWidth: 640,
-    minHeight: 480,
+    minWidth: 800,
+    minHeight: 600,
     webPreferences: {
       preload,
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
@@ -33,6 +33,7 @@ async function createWindow() {
     },
   });
   win.setMenu(null);
+  win.maximize();
 
   if (process.env.VITE_DEV_SERVER_URL) {
     void win.loadURL(url);

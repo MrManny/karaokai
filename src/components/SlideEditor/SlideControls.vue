@@ -2,11 +2,12 @@
 import type { PropType } from 'vue';
 import type { Slide } from '../../types/slide-schema';
 import Textarea from 'primevue/textarea';
+import Card from 'primevue/card';
+import Button from 'primevue/button';
 import { useBusy } from '../../composables/useBusy';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import SuggestButton from './SuggestButton.vue';
 import ImageDrop from './ImageDrop.vue';
-import ActionBar from '../ActionBar/ActionBar.vue';
 import { computed } from 'vue';
 import StackedLayout from '../../layouts/StackedLayout.vue';
 import { ensureDataUri } from '../../utils/img-util';
@@ -29,7 +30,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:slide']);
+const emit = defineEmits(['update:slide', 'remove']);
 const imagePreview = computed(() => props.slide.image?.base64 ?? '');
 
 const updatePartial = <T extends keyof Slide>(key: T, update: Partial<Slide[T]>) => {
@@ -65,11 +66,20 @@ const onSuggestImage = async () => {
 <template>
   <form>
     <StackedLayout>
-      <div data-testid="topic" :data-topic="topic">
-        <div class="stacked">
-          <h2>Text</h2>
-          <p>Enter text for your slide.</p>
+      <Card>
+        <template #title> Topic </template>
+        <template #subtitle> This is your chosen topic: </template>
+        <template #content>
+          <span data-testid="topic">
+            {{ topic }}
+          </span>
+        </template>
+      </Card>
 
+      <Card data-testid="text">
+        <template #title> Text </template>
+        <template #subtitle> Enter text for your slide. </template>
+        <template #content>
           <Textarea
             id="text-input"
             data-testid="text-input"
@@ -78,22 +88,25 @@ const onSuggestImage = async () => {
             :value="slide.text?.text ?? ''"
             @update:modelValue="(value?: string) => setText(value)"
           />
+        </template>
+        <template #footer>
+          <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestText">
+            <template #guidance> What do you want to see on this slide? </template>
+          </SuggestButton>
+        </template>
+      </Card>
 
-          <ActionBar>
-            <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestText" />
-          </ActionBar>
-        </div>
-      </div>
-
-      <div class="stacked">
-        <h2>Image</h2>
-        <p>Set the background image for your slide.</p>
-
-        <ImageDrop :disabled="disabled" @uploaded="(image: string) => setImage(image)" :preview-image="imagePreview" />
-
-        <p>Alternatively, you can generate an image below.</p>
-
-        <ActionBar>
+      <Card>
+        <template #title>Image</template>
+        <template #subtitle> Set the background image for your slide. </template>
+        <template #content>
+          <ImageDrop
+            :disabled="disabled"
+            @uploaded="(image: string) => setImage(image)"
+            :preview-image="imagePreview"
+          />
+        </template>
+        <template #footer>
           <SuggestButton
             :disabled="disabled"
             :loading="isBusy"
@@ -107,8 +120,17 @@ const onSuggestImage = async () => {
               <p>Use simple keywords that describe your image.</p>
             </template>
           </SuggestButton>
-        </ActionBar>
-      </div>
+        </template>
+      </Card>
+
+      <Card>
+        <template #title> Actions </template>
+        <template #content>
+          <StackedLayout>
+            <Button label="Remove" @click="() => $emit('remove')" />
+          </StackedLayout>
+        </template>
+      </Card>
     </StackedLayout>
   </form>
 </template>

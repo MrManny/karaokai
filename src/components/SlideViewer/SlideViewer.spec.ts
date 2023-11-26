@@ -25,6 +25,6 @@ describe('SlideViewer', () => {
     renderComponent(SlideViewer, { slide });
 
     expect(getSlideText().textContent).toEqual('much excitement!');
-    expect(getSlide().style.backgroundImage).toEqual('url(data:image/png;base64,test)');
+    expect(getSlide().style.backgroundImage).toEqual('url("data:image/png;base64,test")');
   });
 });

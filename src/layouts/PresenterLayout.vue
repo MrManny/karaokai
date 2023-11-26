@@ -14,7 +14,7 @@ const end = () => {
   void push({ name: RouteNames.Main });
 };
 
-const { activeSlide, activeSlideIndex, goForward, goBack, start, stop, totalSlides } = usePresenter({
+const { activeSlide, activeSlideIndex, goForward, goBack, setFullscreen, start, stop, totalSlides } = usePresenter({
   onTickDue: () => {
     isNextDue.value = true;
   },
@@ -30,11 +30,13 @@ useKeyDown([
 ]);
 
 onMounted(() => {
+  setFullscreen(true);
   start();
 });
 
 onBeforeUnmount(() => {
   stop();
+  setFullscreen(false);
 });
 </script>
 
