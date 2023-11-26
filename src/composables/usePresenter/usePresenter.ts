@@ -27,6 +27,10 @@ export function usePresenter({ onTick, onTickDue }: PresenterOptions) {
     activeSlideIndex.value++;
   };
 
+  const goTo = (slideNo: number) => {
+    activeSlideIndex.value = slideNo;
+  };
+
   const { start, stop } = useTimer({
     timePerTick: presentation.timer?.timePerTick ?? 10_000,
     onTick: () => {
@@ -55,6 +59,7 @@ export function usePresenter({ onTick, onTickDue }: PresenterOptions) {
     canGoForward,
     goBack,
     goForward,
+    goTo,
     setFullscreen,
     start,
     stop,

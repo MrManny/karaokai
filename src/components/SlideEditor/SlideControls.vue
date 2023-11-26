@@ -3,6 +3,7 @@ import type { PropType } from 'vue';
 import type { Slide } from '../../types/slide-schema';
 import Textarea from 'primevue/textarea';
 import Card from 'primevue/card';
+import Button from 'primevue/button';
 import { useBusy } from '../../composables/useBusy';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
 import SuggestButton from './SuggestButton.vue';
@@ -29,7 +30,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:slide']);
+const emit = defineEmits(['update:slide', 'remove']);
 const imagePreview = computed(() => props.slide.image?.base64 ?? '');
 
 const updatePartial = <T extends keyof Slide>(key: T, update: Partial<Slide[T]>) => {
@@ -119,6 +120,15 @@ const onSuggestImage = async () => {
               <p>Use simple keywords that describe your image.</p>
             </template>
           </SuggestButton>
+        </template>
+      </Card>
+
+      <Card>
+        <template #title> Actions </template>
+        <template #content>
+          <StackedLayout>
+            <Button label="Remove" @click="() => $emit('remove')" />
+          </StackedLayout>
         </template>
       </Card>
     </StackedLayout>
