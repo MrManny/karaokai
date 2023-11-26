@@ -1,6 +1,6 @@
 {
   "name": "karaokai",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "dist-electron/main/index.js",
   "description": "PowerPoint Karaoke - but AI-powered",
   "author": "Manuel Warum <mwarum@gmail.com>",
