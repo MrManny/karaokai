@@ -13,17 +13,17 @@ const hasOpenAiConfigured = async () => await has(TokenName.OpenAi);
     <Card>
       <template #title> KaraokAI </template>
       <template #subtitle>
-        Welcome to <strong>KaraokAi</strong> &ndash; Your Ultimate PowerPoint Karaoke Companion!
+        Welcome to <strong>KaraokAI</strong> &ndash; Your Ultimate PowerPoint Karaoke Companion!
       </template>
       <template #content>
         <h3>
           <i class="pi pi-microphone"></i>
-          Why KaraokAi?
+          Why KaraokAI?
         </h3>
 
         <p>
           Ever found yourself fumbling through a PowerPoint presentation, wishing it was more fun? Say hello to
-          KaraokAi, where the art of impromptu speaking meets the hilarity of randomness, powered by the magic of
+          KaraokAI, where the art of impromptu speaking meets the hilarity of randomness, powered by the magic of
           ChatGPT and DALL-E!
         </p>
 
@@ -51,7 +51,7 @@ const hasOpenAiConfigured = async () => await has(TokenName.OpenAi);
           </li>
           <li>
             <strong>Plan B:</strong>
-            You ran out of your OpenAI budget already? You probably partied to hard and long last night with KaraokAi.
+            You ran out of your OpenAI budget already? You probably partied too hard and long last night with KaraokAI.
             No worries, you can still create stuff. I am just afraid you might have to use your..
             <span class="muted">[gasp]..</span> imagination!
           </li>
