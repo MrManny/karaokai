@@ -20,7 +20,7 @@ defineProps({
   },
 });
 
-defineEmits(['update:modelValue']);
+defineEmits(['blur', 'update:modelValue']);
 </script>
 
 <template>
@@ -32,6 +32,7 @@ defineEmits(['update:modelValue']);
       :max="max"
       :step="1"
       @update:model-value="(value: number) => $emit('update:modelValue', value)"
+      @blur="() => $emit('blur')"
     />
     <span>{{ modelValue }}</span>
   </div>
