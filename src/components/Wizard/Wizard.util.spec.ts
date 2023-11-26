@@ -50,6 +50,9 @@ describe('Wizard.util', () => {
       const [num1, num2, num3] = numbers;
 
       expect(numbers).toHaveLength(3);
+      // duplicate check:
+      expect(new Set(numbers).size).toEqual(3);
+
       expect(num1).toBeGreaterThanOrEqual(0);
       expect(num1).toBeLessThan(10);
       expect(num2).toBeGreaterThanOrEqual(0);

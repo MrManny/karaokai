@@ -16,7 +16,7 @@ export function pickRandomNumbers(howMany: number, toExcl: number): number[] {
 
   const picked: number[] = [];
   while (picked.length < howMany) {
-    const pickedIndex = Math.ceil(Math.random() * available.length);
+    const pickedIndex = Math.floor(Math.random() * available.length);
     const [pickedValue] = available.splice(pickedIndex, 1);
     picked.push(pickedValue);
   }
