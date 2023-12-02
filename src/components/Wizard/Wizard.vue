@@ -7,7 +7,7 @@ import StackedLayout from '../../layouts/StackedLayout.vue';
 import Message from 'primevue/message';
 import Card from 'primevue/card';
 import RadioButton from 'primevue/radiobutton';
-import { computed, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
 import { useBusy } from '../../composables/useBusy';
 import { useRouter } from 'vue-router';
 import { useSlideBuilder } from '../../composables/useSlideBuilder';
@@ -47,14 +47,7 @@ const rules = {
 };
 const v$ = useVuelidate(rules, state);
 
-const tasksDone = ref<number>(0);
-const tasksTotal = ref<number>(0);
-
-const progress = computed<number>(() => {
-  if (tasksTotal.value <= 0) return 0;
-  const percentage = tasksDone.value / tasksTotal.value;
-  return Math.round(percentage * 100);
-});
+const progressMessage = ref<string>('');
 
 async function suggestTopic() {
   await op(async () => {
@@ -81,9 +74,6 @@ function buildEmptySlides(howMany: number): Slide[] {
 }
 
 const generate = () => {
-  tasksDone.value = 0;
-  tasksTotal.value = 0;
-
   op(async () => {
     if (!(await v$.value.$validate())) return;
 
@@ -91,14 +81,18 @@ const generate = () => {
       ? new Set<number>(Array.from(pickRandomNumbers(state.images, state.length)))
       : new Set<number>();
     const backupImages = await loadBackupImages(state.localImagePath, state.length - state.images);
+
+    progressMessage.value = 'Creating slides';
     const slidePrototypes = state.addText
       ? await generateText(state.topic, state.length)
       : buildEmptySlides(state.length);
-    console.debug({ slidePrototypes });
+    progressMessage.value = 'Slides outlined';
+
     const promises: Promise<Slide>[] = slidePrototypes.map(async (prototype: Slide, index: number): Promise<Slide> => {
       const slide = { ...prototype };
       const hasAiImage = slidesWithAiImage.has(index);
       if (hasAiImage && prototype.image?.prompt) {
+        progressMessage.value = `Generating image for slide #${index + 1}`;
         slide.image = {
           base64: await generateImage(prototype.image?.prompt ?? ''),
           prompt: prototype.image?.prompt,
@@ -110,13 +104,12 @@ const generate = () => {
       return slide;
     });
 
-    tasksTotal.value = promises.length;
     let slides = await Promise.all(promises);
-    console.debug({ slides });
+    progressMessage.value = 'All slides generated';
+
     if (state.addIntro) {
       slides = insertIntroAndOutro(state.topic, slides);
     }
-    console.debug({ slides });
     promoteSlides(slides);
 
     void push({ name: RouteNames.Editor });
@@ -321,12 +314,10 @@ const generate = () => {
         />
       </div>
 
-      <ProgressBar
-        data-testid="generate-progress-bar"
-        v-if="isBusy"
-        :mode="progress ? 'determinate' : 'indeterminate'"
-        :value="progress"
-      />
+      <StackedLayout v-if="progressMessage">
+        <div v-if="progressMessage">{{ progressMessage }}</div>
+        <ProgressBar data-testid="generate-progress-bar" v-if="isBusy" mode="indeterminate" />
+      </StackedLayout>
     </StackedLayout>
   </main>
 </template>
