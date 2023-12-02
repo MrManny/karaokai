@@ -24,6 +24,7 @@ export const usePresentation = defineStore('presentation', {
     load(presentation: Presentation) {
       this.topic = presentation.topic;
       this.slides = presentation.slides;
+      this.timer = presentation.timer;
       this.meta = presentation.meta;
     },
     replace(at: number, newSlide: Slide) {
