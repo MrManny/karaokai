@@ -2,10 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended",
-    "schedule:nonOfficeHours",
+    "schedule:weekends",
+    "schedule:automergeWeekly",
     ":reviewer(MrManny)",
     ":maintainLockFilesWeekly",
-    ":automergePatch",
+    ":automergeMinor",
     ":automergeRequireAllStatusChecks",
     ":automergePr",
 
