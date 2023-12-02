@@ -20,6 +20,7 @@ ipcMain.handle('chat', async (_, messages: ChatCompletionCreateParamsBase['messa
   const response = await openai.chat.completions.create({
     model: 'gpt-4',
     stream: false,
+    max_tokens: 2000,
     messages,
   });
   const [firstChoice] = response.choices;

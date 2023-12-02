@@ -13,7 +13,10 @@ export const slideSchema = z.object({
 
   image: z
     .object({
-      base64: z.string().regex(/^data:image\/(png|jpeg|webp|gif);base64,[^ ]+$/),
+      base64: z
+        .string()
+        .regex(/^data:image\/(png|jpeg|webp|gif);base64,[^ ]+$/)
+        .optional(),
       prompt: promptSchema.optional(),
       negative: promptSchema.optional(),
     })

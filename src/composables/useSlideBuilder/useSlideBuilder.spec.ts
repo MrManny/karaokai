@@ -8,7 +8,7 @@ vi.mock('../useOpenAi', () => ({
 
 describe('useSlideBuilder', () => {
   const dummyTopic = 'Hot potato';
-  const dummyAnswer = 'Unit test me, baby!';
+  const dummyAnswer = '## Slide 1:\n * Text: "Unit test me, baby!"\n * Image prompt: a unit test';
 
   afterEach(() => {
     vi.clearAllMocks();
@@ -35,25 +35,28 @@ describe('useSlideBuilder', () => {
     const { generateText } = useSlideBuilder();
 
     // act
-    const texts = await generateText(dummyTopic);
+    const texts = await generateText(dummyTopic, 1);
 
     // assert
     expect(mockAsk).toHaveBeenCalled();
-    expect(texts).toEqual('Unit test me, baby!');
+    expect(texts).toMatchObject([
+      {
+        text: { text: 'Unit test me, baby!' },
+        image: { prompt: 'a unit test' },
+      },
+    ]);
   });
 
   it('should be able to generate slide images', async () => {
     // arrange
-    const mockAsk = vi.fn().mockResolvedValueOnce({ role: 'assistant', content: dummyAnswer });
     const mockDraw = vi.fn().mockResolvedValueOnce('dGVzdA==');
-    useOpenAi.mockReturnValue({ ask: mockAsk, draw: mockDraw });
+    useOpenAi.mockReturnValue({ draw: mockDraw });
     const { generateImage } = useSlideBuilder();
 
     // act
     const texts = await generateImage('Bananas in space!');
 
     // assert
-    expect(mockAsk).toHaveBeenCalled();
     expect(mockDraw).toHaveBeenCalled();
     expect(texts).toEqual('dGVzdA==');
   });

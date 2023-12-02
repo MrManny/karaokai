@@ -13,7 +13,7 @@ import StackedLayout from '../../layouts/StackedLayout.vue';
 import { ensureDataUri } from '../../utils/img-util';
 
 const { isBusy, op } = useBusy();
-const { generateText, generateImage } = useSlideBuilder();
+const { generateImage } = useSlideBuilder();
 
 const props = defineProps({
   disabled: {
@@ -43,20 +43,10 @@ const updatePartial = <T extends 'text' | 'image'>(key: T, update: Partial<Slide
 const setText = (newText?: string) => updatePartial('text', { text: newText ?? '' });
 const setImage = (image?: string) => updatePartial('image', { base64: image ?? '' });
 
-const onSuggestText = async () => {
-  await op(async () => {
-    const text = await generateText(props.topic);
-    setText(text);
-  });
-};
-
-const canSuggestImage = computed(() => !!props.slide.text && !!props.slide.text.text);
-
 const onSuggestImage = async () => {
-  if (!canSuggestImage.value) return;
+  if (isBusy.value) return;
   await op(async () => {
-    const image = await generateImage(props.slide.text?.text ?? '');
-    console.debug('Image generated', { image });
+    const image = await generateImage(props.slide.image?.prompt ?? '');
     const dataUri = ensureDataUri(image);
     setImage(dataUri);
   });
@@ -89,11 +79,6 @@ const onSuggestImage = async () => {
             @update:modelValue="(value?: string) => setText(value)"
           />
         </template>
-        <template #footer>
-          <SuggestButton :disabled="disabled" :loading="isBusy" @suggest="onSuggestText">
-            <template #guidance> What do you want to see on this slide? </template>
-          </SuggestButton>
-        </template>
       </Card>
 
       <Card>
@@ -111,10 +96,8 @@ const onSuggestImage = async () => {
             :disabled="disabled"
             :loading="isBusy"
             :initial-prompt="slide.image?.prompt"
-            :initial-negative="slide.image?.negative"
             @automate="onSuggestImage"
-            :can-automate="canSuggestImage"
-            with-negative
+            can-automate
           >
             <template #guidance>
               <p>Use simple keywords that describe your image.</p>

@@ -1,8 +1,9 @@
 import type { Message } from '../useOpenAi';
 import { useOpenAi } from '../useOpenAi';
-import { drawImage, fallbackPrompt, instructions, topic } from './prompts';
+import { instructions, parseSlides, slides, topic } from './prompts';
 import { TokenName, useVault } from '../useVault';
 import { computed } from 'vue';
+import type { Slide } from '../../types/slide-schema';
 
 export function useSlideBuilder() {
   const { ask, draw } = useOpenAi();
@@ -24,33 +25,21 @@ export function useSlideBuilder() {
     };
   }
 
-  function buildInitialHistory(...moreDetails: string[]): Message[] {
-    return [systemMessage(instructions), ...moreDetails.map((detail) => systemMessage(detail))];
-  }
-
   async function findTopic(): Promise<string> {
-    const messages = [...buildInitialHistory(), userMessage(topic.prompt)];
+    const messages = [systemMessage(instructions.topic), userMessage(topic.prompt)];
     const answer = await ask(messages);
     return answer.content;
   }
 
-  async function generateText(forTopic: string, slideNumber?: number): Promise<string> {
-    const history = buildInitialHistory(topic.summary(forTopic));
-    const prompt = fallbackPrompt(slideNumber);
-    const messages = [...history, userMessage(prompt)];
-    return await ask(messages).then((m) => m.content);
+  async function generateText(forTopic: string, slideCount: number): Promise<Slide[]> {
+    const messages = [systemMessage(instructions.slides), userMessage(slides(forTopic, slideCount))];
+    const { content } = await ask(messages);
+    const parsed = parseSlides(content);
+    console.debug({ parsed });
+    return parsed;
   }
 
-  async function generateImage(slideText?: string, topic?: string): Promise<string> {
-    const details: string[] = [];
-    if (topic) {
-      details.push(`The topic is: ${topic}`);
-    }
-    if (slideText) {
-      details.push(`The slide contains the text: ${slideText}`);
-    }
-    const messages = [...buildInitialHistory(...details), { role: 'user', content: drawImage.prompt }];
-    const prompt = await ask(messages).then((m) => m.content);
+  async function generateImage(prompt: string): Promise<string> {
     return await draw(prompt);
   }
 

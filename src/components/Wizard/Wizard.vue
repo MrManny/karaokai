@@ -56,13 +56,6 @@ const progress = computed<number>(() => {
   return Math.round(percentage * 100);
 });
 
-interface GenerationOptions {
-  topic: string;
-  slideNo: number;
-  withImage: boolean;
-  withText: boolean;
-}
-
 async function suggestTopic() {
   await op(async () => {
     state.topic = await findTopic();
@@ -70,33 +63,21 @@ async function suggestTopic() {
   });
 }
 
-function promoteSlides(settings: typeof state, slides: Slide[]) {
-  presentation.topic = settings.topic;
-  presentation.slides = slides;
-  if (!settings.duration) return;
-  presentation.timer = {
-    timePerTick: settings.duration * 1000,
-  };
+function promoteSlides(slides: Slide[]) {
+  presentation.load({
+    topic: state.topic,
+    timer: state.duration ? { timePerTick: state.duration * 1000 } : undefined,
+    slides,
+  });
 }
 
-async function generateSlide({ topic, slideNo, withImage, withText }: GenerationOptions): Promise<Slide> {
-  const slide: Slide = {};
-  if (withText) {
-    const text = await generateText(topic, slideNo);
-    slide.text = { text };
-    console.debug(`Generated slide's ${slideNo} text: "${text}"`);
+function buildEmptySlides(howMany: number): Slide[] {
+  if (howMany <= 0) return [];
+  const slides: Slide[] = new Array<Slide>(howMany);
+  for (let i = 0; i < slides.length; i++) {
+    slides[i] = {};
   }
-  if (!withImage) return slide;
-
-  try {
-    const image = await generateImage(slide.text?.text);
-    slide.image = { base64: image };
-    console.debug(`Generated slide's ${slideNo} image`);
-  } catch (e) {
-    console.error(e);
-  }
-
-  return slide;
+  return slides;
 }
 
 const generate = () => {
@@ -106,36 +87,37 @@ const generate = () => {
   op(async () => {
     if (!(await v$.value.$validate())) return;
 
-    const slidesWithAiImage = new Set<number>(Array.from(pickRandomNumbers(state.images, state.length)));
+    const slidesWithAiImage = state.addImages
+      ? new Set<number>(Array.from(pickRandomNumbers(state.images, state.length)))
+      : new Set<number>();
     const backupImages = await loadBackupImages(state.localImagePath, state.length - state.images);
-    console.debug('Generating slides');
+    const slidePrototypes = state.addText
+      ? await generateText(state.topic, state.length)
+      : buildEmptySlides(state.length);
+    console.debug({ slidePrototypes });
+    const promises: Promise<Slide>[] = slidePrototypes.map(async (prototype: Slide, index: number): Promise<Slide> => {
+      const slide = { ...prototype };
+      const hasAiImage = slidesWithAiImage.has(index);
+      if (hasAiImage && prototype.image?.prompt) {
+        slide.image = {
+          base64: await generateImage(prototype.image?.prompt ?? ''),
+          prompt: prototype.image?.prompt,
+        };
+      } else if (backupImages.length) {
+        const [localImage] = backupImages.splice(0, 1);
+        slide.image = { base64: localImage };
+      }
+      return slide;
+    });
 
-    const promises: Promise<Slide>[] = [];
-    for (let i = 0; i < state.length; i++) {
-      const withAiImage = slidesWithAiImage.has(i);
-      const slideGeneration = generateSlide({
-        topic: state.topic,
-        slideNo: i + 1,
-        withText: state.addText,
-        withImage: withAiImage,
-      }).then((slide) => {
-        tasksDone.value++;
-
-        if (!withAiImage && backupImages.length) {
-          const [localImage] = backupImages.splice(0, 1);
-          slide.image = { base64: localImage };
-        }
-
-        return slide;
-      });
-      promises.push(slideGeneration);
-    }
     tasksTotal.value = promises.length;
     let slides = await Promise.all(promises);
+    console.debug({ slides });
     if (state.addIntro) {
-      slides = insertIntroAndOutro(presentation.topic, presentation.slides);
+      slides = insertIntroAndOutro(state.topic, slides);
     }
-    promoteSlides(state, slides);
+    console.debug({ slides });
+    promoteSlides(slides);
 
     void push({ name: RouteNames.Editor });
   });
@@ -148,7 +130,12 @@ const generate = () => {
       <Message v-if="!isOpenaiAvailable" severity="warn" :closable="false">
         <div>OpenAI credentials have not been configured. AI operations are unavailable.</div>
         <div>Configure your OpenAI credentials in the settings here:</div>
-        <Button label="Configure OpenAI" severity="warning" @click="$router.push({ name: RouteNames.Vault })" />
+        <Button
+          label="Configure OpenAI"
+          severity="warning"
+          @click="$router.push({ name: RouteNames.Vault })"
+          :disabled="isBusy"
+        />
       </Message>
 
       <div class="card-deck">
@@ -163,6 +150,7 @@ const generate = () => {
               <InputText
                 data-testid="topic-input"
                 v-model.trim="state.topic"
+                :disabled="isBusy"
                 placeholder="Topic"
                 required
                 @blur="v$.topic.$touch"
@@ -190,17 +178,18 @@ const generate = () => {
               v-model.number="state.length"
               :min="1"
               :max="30"
+              :disabled="isBusy"
               @blur="v$.length.$touch"
             />
 
             <p>Do you also want an intro and outro slide on top of that?</p>
 
             <div class="radio">
-              <RadioButton v-model="state.addIntro" :value="true" name="add-intro" />
+              <RadioButton v-model="state.addIntro" :value="true" name="add-intro" :disabled="isBusy" />
               <label for="add-text">Yes</label>
             </div>
             <div class="radio">
-              <RadioButton v-model="state.addIntro" :value="false" name="add-intro" />
+              <RadioButton v-model="state.addIntro" :value="false" name="add-intro" :disabled="isBusy" />
               <label for="add-text">No</label>
             </div>
           </template>
@@ -219,11 +208,23 @@ const generate = () => {
           <template #subtitle> Do you want me to create texts? </template>
           <template #content>
             <div class="radio">
-              <RadioButton v-model="state.addText" :value="true" name="add-text" @blur="v$.addText.$touch" />
+              <RadioButton
+                v-model="state.addText"
+                :value="true"
+                name="add-text"
+                @blur="v$.addText.$touch"
+                :disabled="isBusy"
+              />
               <label for="add-text">Yes</label>
             </div>
             <div class="radio">
-              <RadioButton v-model="state.addText" :value="false" name="add-text" @blur="v$.addText.$touch" />
+              <RadioButton
+                v-model="state.addText"
+                :value="false"
+                name="add-text"
+                @blur="v$.addText.$touch"
+                :disabled="isBusy"
+              />
               <label for="add-text">No</label>
             </div>
           </template>
@@ -232,7 +233,7 @@ const generate = () => {
               Use of this function requires a configured OpenAI token
             </Message>
 
-            <AiUseMessage v-else-if="state.addText" :num-ops="state.length" />
+            <AiUseMessage v-else-if="state.addText" />
           </template>
         </Card>
 
@@ -244,7 +245,13 @@ const generate = () => {
           <template #subtitle> Do you want me to create background images? </template>
           <template #content>
             <div class="radio">
-              <RadioButton v-model="state.addImages" :value="true" name="add-images" @blur="v$.addImages.$touch" />
+              <RadioButton
+                v-model="state.addImages"
+                :value="true"
+                name="add-images"
+                @blur="v$.addImages.$touch"
+                :disabled="isBusy"
+              />
               <label for="add-text">Yes</label>
 
               <SliderWithLabel
@@ -252,12 +259,18 @@ const generate = () => {
                 :min="1"
                 :max="state.length"
                 v-model="state.images"
-                :disabled="!state.addImages"
+                :disabled="!state.addImages || isBusy"
                 @blur="v$.images.$touch"
               />
             </div>
             <div class="radio">
-              <RadioButton v-model="state.addImages" :value="false" name="add-images" @blur="v$.addImages.$touch" />
+              <RadioButton
+                v-model="state.addImages"
+                :value="false"
+                name="add-images"
+                @blur="v$.addImages.$touch"
+                :disabled="isBusy"
+              />
               <label for="add-text">No</label>
             </div>
 
@@ -287,6 +300,7 @@ const generate = () => {
               data-testid="duration-input"
               :min="0"
               :max="60"
+              :disabled="isBusy"
               v-model.number="state.duration"
               @blur="v$.duration.$touch"
             />
