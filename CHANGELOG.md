@@ -1,5 +1,11 @@
 # KaraokAI
 
+## 0.2.1
+
+### Patch Changes
+
+- 8f8e2e1: Simplify GPT interactions regarding slide generation
+
 ## 0.2.0
 
 ### Minor Changes
