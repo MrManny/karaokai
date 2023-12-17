@@ -35,10 +35,8 @@ export function usePresenter({ onTick, onTickDue }: PresenterOptions) {
     timePerTick: presentation.timer?.timePerTick ?? 10_000,
     onTick: () => {
       if (!canGoForward.value) {
-        console.debug('Stopping ticks');
         stop();
       } else {
-        console.debug('Going forward');
         goForward();
       }
       onTick?.();

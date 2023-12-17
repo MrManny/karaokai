@@ -34,9 +34,7 @@ export function useSlideBuilder() {
   async function generateText(forTopic: string, slideCount: number): Promise<Slide[]> {
     const messages = [systemMessage(instructions.slides), userMessage(slides(forTopic, slideCount))];
     const { content } = await ask(messages);
-    const parsed = parseSlides(content);
-    console.debug({ parsed });
-    return parsed;
+    return parseSlides(content);
   }
 
   async function generateImage(prompt: string): Promise<string> {

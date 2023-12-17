@@ -44,6 +44,5 @@ ipcMain.handle('select-folder', async (): Promise<string | undefined> => {
 
 ipcMain.handle('pick-random-images', async (_, folder: string, howMany: number): Promise<string[]> => {
   const picked = await pickImageFiles(folder, howMany);
-  console.debug('Picks', JSON.stringify(picked));
   return await Promise.all(picked.map((pick) => loadImage(pick)));
 });
