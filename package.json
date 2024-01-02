@@ -28,7 +28,7 @@
     "@testing-library/vue": "8.0.1",
     "@typescript-eslint/eslint-plugin": "6.14.0",
     "@typescript-eslint/parser": "6.14.0",
-    "@vitejs/plugin-vue": "4.5.2",
+    "@vitejs/plugin-vue": "5.0.2",
     "@vitest/coverage-istanbul": "1.0.4",
     "@vitest/coverage-v8": "1.0.4",
     "@vue/eslint-config-typescript": "12.0.0",
